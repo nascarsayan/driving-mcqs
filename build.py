@@ -26,9 +26,22 @@ def main():
             mime = mimetypes.guess_type(p.name)[0] or "image/jpeg"
             c["img"] = f"data:{mime};base64," + base64.b64encode(p.read_bytes()).decode()
 
+    # the speed chart is a reading of the question bank, so every mark must be traceable:
+    # the question has to exist and its own answer has to contain that number
+    speeds = json.loads((SRC / "speeds.json").read_text(encoding="utf-8"))
+    answers = {c["n"]: c["o"][c["a"]] for c in cards}
+    for row in speeds["rows"]:
+        for m in row["marks"]:
+            ans = answers.get(m["q"])
+            if ans is None:
+                sys.exit(f"build failed: speeds.json cites Q{m['q']}, which does not exist")
+            if str(m["kmh"]) not in ans:
+                sys.exit(f"build failed: Q{m['q']} answers {ans!r}, not {m['kmh']} km/h")
+
     data = json.dumps(cards, ensure_ascii=False, separators=(",", ":"))
     html = (SRC / "template.html").read_text(encoding="utf-8")
-    for token, value in (("__DATA__", data), ("__COUNT__", str(len(cards)))):
+    for token, value in (("__DATA__", data), ("__COUNT__", str(len(cards))),
+                         ("__SPEEDS__", json.dumps(speeds, ensure_ascii=False, separators=(",", ":")))):
         if token not in html:
             sys.exit(f"build failed: {token} missing from template.html")
         html = html.replace(token, value)

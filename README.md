@@ -8,11 +8,20 @@ Parivahan question bank. **431 questions, 95 road-sign images.**
 No install, no sign-up, no server. The whole app is a single self-contained HTML file with the
 sign images embedded, so it also works offline — save the page and open it on a plane.
 
+Three views, switched from the header:
+
+| | |
+|---|---|
+| **Study** | The flashcards — spaced repetition, decks, filters |
+| **Signs** | Every picture in the bank as a cheat sheet: 73 road signs, the 7 driver hand signals and 15 road-marking photos, each with what it means. Filter it by text, or tap one to go and be quizzed on it |
+| **Speeds** | Every speed limit in the bank on one 0–80 km/h ray per vehicle, so you can see at a glance that a motor cycle does 25 near a school, 30 in the city at night, 40 in the city and 50 flat out. Filter by vehicle type; tap a branch for the question it came from |
+
 ## Studying
 
 | | |
 |---|---|
 | **Answer** | Click an option, or press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> — you get instant feedback with the correct answer |
+| **Search** | The magnifier (<kbd>/</kbd>) fuzzy-matches the question, then the correct answer, then the wrong options, in that order of weight. Whole words aren't needed — `hlmt` finds the helmet question, `ylw ln` finds the yellow line, `q42` jumps to question 42 |
 | **Decks** | All · Starred · Tricky |
 | **Filters** | The funnel button (<kbd>F</kbd>) opens a sheet with two tabs: **Licence**, for the class of vehicle you're sitting for, and **Topics**, for the subject. Within a tab your picks are OR'd, and the two tabs are AND'ed — "Two-wheeler + Speed limits" is the seven bike speed-limit questions |
 | **Spaced repetition** | Leitner boxes: a right answer promotes a card (New → Learning → … → Mastered), a wrong one sends it back to the start |
@@ -26,7 +35,16 @@ Everything is saved in your browser's local storage: your Leitner boxes and star
 correct/wrong totals, and **which card you were on**. Refresh or close the tab and you come back to
 the same question in the same deck, with the same totals. The ⟳ button clears it.
 
-Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star · <kbd>F</kbd> filters.
+Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star · <kbd>F</kbd> filters · <kbd>/</kbd> search.
+
+### Speed limits
+
+The Speeds view is built from [`src/speeds.json`](src/speeds.json), and every mark on it is an
+answer in the bank rather than a rule looked up elsewhere — the build fails if a cited question
+doesn't exist or if its own answer doesn't contain that number. Where the bank contradicts itself it
+says so rather than picking a side: a motor car on a ghat road is 40 km/h by Q194, yet Q187 names
+the motor car as the vehicle not permitted above 30, and passing a procession is 15 km/h by Q201 but
+25 by Q356. Learn both as printed.
 
 ## Where the questions come from
 
@@ -118,6 +136,7 @@ src/template.html   the actual app: markup, styles, logic, with __DATA__/__COUNT
 src/cards.json      431 questions - text, options, answer index, sign filename
 src/tags.json       question number -> licence categories (hand-maintained)
 src/topics.json     question number -> subjects (hand-maintained)
+src/speeds.json     the speed chart: vehicle, circumstance, km/h, source question
 src/signs/*.jpeg    95 sign images, one per question that has one
 ```
 

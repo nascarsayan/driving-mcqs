@@ -183,6 +183,86 @@
   kbd{background:hsl(var(--muted));border:1px solid hsl(var(--border));border-bottom-width:2px;border-radius:4px;
       padding:1px 5px;font:600 10.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:hsl(var(--muted-fg))}
 
+  /* ---------- view switcher: Study / Signs / Speeds ---------- */
+  .seg{display:flex;gap:2px;flex:none;background:hsl(var(--muted));padding:3px;
+       border-radius:calc(var(--radius) - 1px)}
+  .seg button{padding:5px 11px;border-radius:calc(var(--radius) - 3px);font-size:13px;
+              font-weight:500;color:hsl(var(--muted-fg));white-space:nowrap}
+  .seg button[aria-selected="true"]{background:hsl(var(--card));color:hsl(var(--fg));box-shadow:var(--shadow)}
+  /* the deck chips, progress bar, stats and card controls only mean something while studying */
+  body:not([data-view="study"]) .chips,
+  body:not([data-view="study"]) .stats,
+  body:not([data-view="study"]) .prog,
+  body:not([data-view="study"]) footer,
+  body:not([data-view="study"]) #shuffle,
+  body:not([data-view="study"]) #flipmode,
+  body:not([data-view="study"]) #reset{display:none}
+  body:not([data-view="study"]) main.wrap{padding-bottom:40px}
+
+  /* ---------- reference sheets (signs + speeds) ---------- */
+  .vfind{width:100%;padding:10px 12px;margin:10px 0 2px;border-radius:var(--radius);
+         border:1px solid hsl(var(--border));background:hsl(var(--card));color:hsl(var(--fg));
+         font:inherit;font-size:14.5px}
+  .vfind::placeholder{color:hsl(var(--muted-fg))}
+  .note{font-size:13px;line-height:1.5;color:hsl(var(--muted-fg));background:hsl(var(--subtle));
+        border:1px solid hsl(var(--border));border-radius:var(--radius);padding:10px 12px;margin:12px 0}
+  .note b{color:hsl(var(--fg));font-weight:600}
+  .sec{font-size:15px;margin:22px 0 10px;letter-spacing:-.012em;display:flex;align-items:baseline;gap:8px}
+  .sec span{font-weight:400;font-size:12.5px;color:hsl(var(--muted-fg))}
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+  .tile{display:flex;flex-direction:column;gap:8px;text-align:center;padding:10px 9px;
+        border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));
+        box-shadow:var(--shadow);transition:background .13s}
+  .tile:hover{background:hsl(var(--muted))}
+  .tile img{width:100%;height:84px;object-fit:contain;background:#fff;padding:6px;border-radius:6px;
+            border:1px solid hsl(var(--border))}
+  .tile .mean{font-size:13px;font-weight:500;line-height:1.32;color:hsl(var(--card-fg))}
+  .tile .qn{margin-top:auto;font-size:11px;color:hsl(var(--muted-fg));font-variant-numeric:tabular-nums}
+
+  /* ---------- speed chart: one ray per vehicle, limits branching off it ---------- */
+  .vchips{display:flex;gap:5px;flex-wrap:wrap;margin:12px 0 4px}
+  .vchips button{padding:5px 11px;border-radius:999px;border:1px solid hsl(var(--border));
+                 background:hsl(var(--card));font-size:13px;font-weight:500;color:hsl(var(--muted-fg))}
+  .vchips button:hover{background:hsl(var(--muted));color:hsl(var(--fg))}
+  .vchips button[aria-pressed="true"]{background:hsl(var(--primary));border-color:hsl(var(--primary));
+                                      color:hsl(var(--primary-fg))}
+  .axis{position:relative;height:16px;margin-top:14px}
+  .axis i{position:absolute;top:0;font-size:10.5px;font-style:normal;color:hsl(var(--muted-fg));
+          transform:translateX(-50%);font-variant-numeric:tabular-nums}
+  .axis i::after{content:"";position:absolute;left:50%;top:15px;width:1px;height:6px;background:hsl(var(--border))}
+  .srow{border-top:1px solid hsl(var(--border));padding:11px 0 0}
+  .srow h3{margin:0 0 13px;font-size:13.5px;font-weight:600;letter-spacing:-.008em}
+  .track{position:relative;height:2px;background:hsl(var(--border))}
+  .track::after{content:"";position:absolute;right:-1px;top:-3px;border:4px solid transparent;
+                border-left-color:hsl(var(--border));border-right:0}   /* the ray keeps going */
+  .mk{position:absolute;top:1px;width:0;padding:0;height:0}
+  .mk .dot{position:absolute;left:-5px;top:-5px;width:8px;height:8px;border-radius:50%;
+           background:hsl(var(--fg));border:1px solid hsl(var(--bg))}
+  .mk .stem{position:absolute;left:0;top:4px;width:1px;height:var(--stem);background:hsl(var(--border))}
+  .mk .lbl{position:absolute;top:calc(4px + var(--stem));left:0;transform:translateX(-50%);
+           white-space:nowrap;font-size:11.5px;line-height:1.35;color:hsl(var(--muted-fg))}
+  .mk .lbl b{color:hsl(var(--fg));font-weight:600;font-variant-numeric:tabular-nums}
+  .mk.s .lbl{transform:none}
+  .mk.e .lbl{transform:translateX(-100%)}
+  .mk:hover .dot{background:hsl(var(--danger))}
+  .mk:hover .lbl b{color:hsl(var(--danger))}
+
+  /* ---------- search palette ---------- */
+  #search{padding:0;max-width:560px;max-height:min(80vh,640px);overflow:hidden}
+  #search[open]{display:flex;flex-direction:column}
+  #sq{width:100%;padding:14px 14px;border:0;background:transparent;color:hsl(var(--fg));
+      font:inherit;font-size:16px;outline:none}
+  #sres{padding:6px}
+  .hit{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:var(--radius);
+       border:1px solid transparent;font-size:14px;line-height:1.4}
+  .hit:hover,.hit.cur{background:hsl(var(--muted))}
+  .hit .qn{font-size:11px;font-weight:600;color:hsl(var(--muted-fg));font-variant-numeric:tabular-nums}
+  .hit .ans{display:block;font-size:12.5px;color:hsl(var(--muted-fg));margin-top:2px}
+  .hit .ans b{color:hsl(var(--success));font-weight:500}
+  .hit em{font-style:normal;background:hsl(var(--star)/.22);border-radius:3px}
+  .hit .out{font-size:10.5px;color:hsl(var(--muted-fg));border:1px solid hsl(var(--border));
+            border-radius:999px;padding:0 6px;margin-left:6px;white-space:nowrap}
+
   .empty{text-align:center;padding:56px 20px;color:hsl(var(--muted-fg))}
   .empty h2{color:hsl(var(--fg));font-size:18px;margin:0 0 8px;letter-spacing:-.01em}
   .empty .btn{margin-top:16px;display:inline-block;padding:9px 16px;border-radius:calc(var(--radius) - 1px);
@@ -248,7 +328,10 @@
     .brand small{display:none} .brand{font-size:14px}
     /* two header rows, not three: brand + tools, then the decks on their own scrolling line */
     .bar{gap:8px;padding:9px 0}
-    .chips{order:3;flex:1 0 100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+    /* row 1 brand + tools, row 2 the view switcher with the decks scrolling beside it */
+    .seg{order:3}
+    .chips{order:4;flex:1 1 auto;min-width:0;flex-wrap:nowrap;overflow-x:auto;
+           scrollbar-width:none;-ms-overflow-style:none}
     .chips::-webkit-scrollbar{display:none}
     .stats{gap:12px}
     .spacer{margin-left:0}          /* let it wrap instead of being clipped at the edge */
@@ -263,6 +346,10 @@
     .dfoot{padding-bottom:max(11px,env(safe-area-inset-bottom))}
     .grid{grid-template-columns:1fr 1fr;gap:2px}
     .grid .pick{gap:7px;padding:10px 7px}
+    .seg button{padding:5px 9px;font-size:12.5px}
+    .sgrid{grid-template-columns:1fr 1fr;gap:8px}
+    .srow h3{font-size:13px}
+    .mk .lbl{font-size:11px}
   }
   @keyframes sheet{from{transform:translateY(24px)}to{transform:none}}
 </style>
@@ -279,7 +366,15 @@
       <button class="chip" data-deck="starred">★<span class="c" id="c-starred"></span></button>
       <button class="chip" data-deck="hard">Tricky<span class="c" id="c-hard"></span></button>
     </div>
+    <div class="seg" id="views" role="tablist">
+      <button data-view="study" role="tab" aria-selected="true">Study</button>
+      <button data-view="signs" role="tab" aria-selected="false">Signs</button>
+      <button data-view="speeds" role="tab" aria-selected="false">Speeds</button>
+    </div>
     <div class="tools">
+      <button class="icon" id="searchbtn" title="Search questions (/)"><svg width="14" height="14"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
       <button class="icon" id="tagbtn" title="Filter questions (F)"><svg width="14" height="14"
         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
         stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><i class="cnt" id="tagcnt"></i></button>
@@ -305,7 +400,11 @@
   <span class="spacer">Mastered <b id="s-mast">0%</b> of deck</span>
 </div>
 
-<main class="wrap"><div id="stage"></div></main>
+<main class="wrap">
+  <div id="stage"></div>
+  <div id="sheet" hidden></div>
+  <div id="chart" hidden></div>
+</main>
 
 <footer>
   <div class="wrap nav">
@@ -315,6 +414,18 @@
     <span class="hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> answer · <kbd>Space</kbd> next · <kbd>S</kbd> star · <kbd>X</kbd> shuffle · <kbd>R</kbd> reveal</span>
   </div>
 </footer>
+
+<dialog id="search" aria-label="Search questions">
+  <div class="dhd" style="padding:0">
+    <input id="sq" placeholder="Search questions — try &quot;helmet&quot;, &quot;yellow line&quot;, &quot;q42&quot;"
+           autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search questions">
+  </div>
+  <div class="dbody" id="sres"></div>
+  <div class="dfoot">
+    <span class="fcount" id="scount"></span>
+    <button class="btn" id="sclose">Close</button>
+  </div>
+</dialog>
 
 <dialog id="filters" aria-label="Filter questions">
   <div class="dhd">
@@ -358,6 +469,7 @@
 
 <script>
 const CARDS = __DATA__;
+const SPEEDS = __SPEEDS__;
 
 /* ---------- persistence ----------
    ll-flash-v1      per-question record: Leitner box, seen/ok/bad tallies, star
@@ -384,7 +496,7 @@ const seek = byId('seek'), knob = byId('knob'), tip = byId('tip'), prog = byId('
 
 function saveUI(){
   localStorage.setItem(PKEY, JSON.stringify({deck, n: queue[qi] ? queue[qi].n : null,
-    reveal: revealMode, tags: [...tagSel], topics: [...topSel]}));
+    reveal: revealMode, tags: [...tagSel], topics: [...topSel], view}));
 }
 
 /* ---------- the two filters ----------
@@ -577,9 +689,9 @@ function drawFilters(){
   byId('fclear').style.opacity = filtered() ? 1 : .45;
 }
 function applyFilters(){
-  paintTags(); drawFilters();
+  paintTags(); if (filters.open) drawFilters();
   buildQueue(true);        // stay on the current card when it survives the filter
-  render();
+  paint();                 // the sheets are filtered too, so repaint whichever view is up
 }
 function clearFilters(){ tagSel.clear(); topSel.clear(); applyFilters(); }
 function setTab(t){
@@ -601,6 +713,220 @@ function openFilters(){
   drawFilters();
   byId('filters').showModal();
 }
+
+/* ---------- fuzzy search ----------
+   Each query word must appear in the card, but not necessarily whole or in
+   order: letters may be spread out ("ylw ln" finds "yellow line"). Adjacent
+   letters and word-starts score higher, so real word matches beat scattered
+   ones. Fields are weighted question > correct answer > the wrong options,
+   because that is the order in which you think of a card.                    */
+const FIELDS = c => [[c.q, 3], [c.o[c.a], 2],
+                     [c.o.filter((_, i) => i !== c.a).join(' · '), 1]];
+const wordStart = (s, at) => at === 0 || !/[a-z0-9]/.test(s[at-1]);
+function score(term, text){
+  const s = text.toLowerCase();
+  const at = s.indexOf(term);
+  // tier 1: the letters actually appear together. Always beats a scattered match,
+  // so "stereo" finds the option that says stereo rather than s-t-e-r-e-o strewn
+  // across some other sentence.
+  if (at >= 0) return (60 + term.length * 8 + (wordStart(s, at) ? 30 : 0)) * 100 / (100 + at);
+  // tier 1b: the text holds a shorter form of the word — "cross" for "crossing",
+  // "park" for "parking". Scores under a real hit, over a scattered one.
+  for (const w of s.split(/[^a-z0-9]+/))
+    if (w.length >= 4 && term.startsWith(w)) return 42 + w.length * 3;
+  // tier 2: subsequence, for abbreviations and typos ("ylw ln" -> "yellow line").
+  // Try every place the first letter occurs rather than the earliest one, or "ln"
+  // would match the l of "Yellow" and the n of "line" instead of the word "line".
+  let best = 0, tries = 0;
+  for (let from = s.indexOf(term[0]); from >= 0 && tries < 12; from = s.indexOf(term[0], from + 1)){
+    tries++;
+    let i = from, total = 0, run = 0, ok = true;
+    for (const ch of term){
+      const hit = s.indexOf(ch, i);
+      if (hit < 0){ ok = false; break; }
+      run = hit === i ? run + 1 : 0;
+      total += 1 + run * 2 + (wordStart(s, hit) ? 3 : 0);
+      i = hit + 1;
+    }
+    if (!ok) break;                                    // later starts can only fare worse
+    // letters spread across half a sentence are a coincidence, not a match
+    if (term.length >= 4 && i - from > term.length * 3.5) continue;
+    // ...but letters inside one word are an abbreviation: "ylw" of "yellow"
+    if (!/\s/.test(s.slice(from, i))) total *= 2.5;
+    best = Math.max(best, Math.min(total, 40) * 100 / (100 + from));
+  }
+  return best;
+}
+function searchCards(query){
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return [];
+  const hits = [];
+  for (const c of CARDS){
+    const fields = FIELDS(c), num = 'q' + c.n;
+    let total = 0;
+    for (const term of terms){
+      let best = num.startsWith(term) ? 60 : 0;          // "q42" jumps straight there
+      for (const [text, weight] of fields) best = Math.max(best, score(term, text) * weight);
+      if (!best) { total = 0; break; }                   // every word has to land somewhere
+      total += best;
+    }
+    if (total) hits.push({c, total});
+  }
+  return hits.sort((a, b) => b.total - a.total).slice(0, 50);
+}
+/* highlight the query word where it literally appears — marking the letters of a
+   fuzzy match instead just speckles the sentence and reads as noise */
+function mark(text, term){
+  const at = term ? text.toLowerCase().indexOf(term) : -1;
+  if (at < 0) return esc(text);
+  return esc(text.slice(0, at)) + '<em>' + esc(text.slice(at, at + term.length)) + '</em>'
+       + esc(text.slice(at + term.length));
+}
+let hits = [], cur = 0;
+function drawHits(){
+  const q = byId('sq').value.trim();
+  hits = searchCards(q); cur = 0;
+  const term = q.toLowerCase().split(/\s+/)[0] || '';
+  byId('sres').innerHTML = !q
+    ? '<p class="note" style="margin:8px">Search the question, its answer and the other options —\
+       whole words are not required. Type <b>q42</b> to jump to a question number.</p>'
+    : !hits.length ? '<p class="note" style="margin:8px">Nothing matches that.</p>'
+    : hits.map(({c}, i) => `<button class="hit${i ? '' : ' cur'}" data-n="${c.n}">
+        <span class="qn">Q${c.n}</span>${inDeck(c, deck) ? ''
+          : '<span class="out">outside your filters</span>'}
+        <span style="display:block">${mark(c.q, term)}</span>
+        <span class="ans"><b>✓ ${mark(c.o[c.a], term)}</b></span></button>`).join('');
+  byId('scount').textContent = q ? `${hits.length}${hits.length === 50 ? '+' : ''} of ${CARDS.length}` : '';
+  [...document.querySelectorAll('.hit')].forEach(b => b.onclick = () => jumpTo(+b.dataset.n));
+}
+function moveHit(d){
+  const els = [...document.querySelectorAll('.hit')];
+  if (!els.length) return;
+  cur = (cur + d + els.length) % els.length;
+  els.forEach((e, i) => e.classList.toggle('cur', i === cur));
+  els[cur].scrollIntoView({block:'nearest'});
+}
+/* land on a card, lifting the filters if they would hide it */
+function jumpTo(n){
+  const c = CARDS.find(x => x.n === n); if (!c) return;
+  search.close();
+  if (!inDeck(c, deck)){ tagSel.clear(); topSel.clear(); paintTags(); deck = 'all'; }
+  setView('study');
+  setDeck(deck, n);
+}
+function openSearch(){
+  const box = byId('sq');
+  search.showModal(); box.value = ''; drawHits(); box.focus();
+}
+
+/* ---------- signs & signals cheat sheet ---------- */
+let sheetQ = '';
+const SECTIONS = [
+  ['Road signs', c => c.p[0] === 'sign',
+   'Posted beside the road. Mandatory signs are circles, cautionary signs triangles, informative signs rectangles.'],
+  ['Hand signals given by the driver', c => c.p[0] === 'hand',
+   'The arm signals a driver gives. This question bank has <b>no traffic-police signals</b> — the only officer it mentions is one who may or may not be directing a junction.'],
+  ['Road markings & other pictures', c => c.p[0] !== 'sign' && c.p[0] !== 'hand', ''],
+];
+function renderSheet(){
+  // same fuzzy matching as the search palette, so "level crossing" still finds
+  // the sign whose answer reads "level cross"
+  const terms = sheetQ.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const pool = CARDS.filter(c => c.img && tagOk(c) && topOk(c) && terms.every(t =>
+    ('q' + c.n).startsWith(t) || score(t, c.o[c.a]) || score(t, c.q)));
+  let html = `<input class="vfind" id="vfind" value="${esc(sheetQ)}" autocomplete="off"
+    placeholder="Filter these ${CARDS.filter(c => c.img).length} pictures — try &quot;level crossing&quot;">`;
+  if (!pool.length) html += '<p class="note">No pictures match. Clear the box above, or the funnel filters.</p>';
+  for (const [title, test, blurb] of SECTIONS){
+    const g = pool.filter(test);
+    if (!g.length) continue;
+    html += `<h2 class="sec">${title}<span>${g.length}</span></h2>
+      ${blurb ? `<p class="note">${blurb}</p>` : ''}
+      <div class="sgrid">${g.map(c => `<button class="tile" data-n="${c.n}">
+        <img src="${c.img}" alt="" loading="lazy">
+        <span class="mean">${esc(c.o[c.a])}</span>
+        <span class="qn">Q${c.n}</span></button>`).join('')}</div>`;
+  }
+  byId('sheet').innerHTML = html;
+  const find = byId('vfind');
+  find.oninput = () => { sheetQ = find.value; renderSheet();
+                         const f = byId('vfind'); f.focus(); f.setSelectionRange(f.value.length, f.value.length); };
+  [...byId('sheet').querySelectorAll('.tile')].forEach(b => b.onclick = () => jumpTo(+b.dataset.n));
+}
+
+/* ---------- speed chart ----------
+   One ray per vehicle, 0 to 80 km/h on a shared scale, with each limit
+   branching off where it falls. Labels are stacked onto as many levels as it
+   takes for them not to collide at the current width.                        */
+const VEHS = [['All vehicles', []], ['Two-wheeler', ['general','two-wheeler']],
+              ['Car / LMV', ['general','car']], ['Auto-rickshaw', ['general','auto']],
+              ['Transport / heavy', ['general','transport']]];
+function layout(marks, W){
+  const items = marks.map(m => ({...m,
+    x: m.kmh / SPEEDS.axis * W,
+    w: (String(m.kmh) + ' ' + m.at).length * 6.1 + 12,
+  })).sort((a, b) => a.x - b.x);
+  const ends = [];
+  for (const it of items){
+    let start = it.x - it.w / 2;
+    it.side = '';
+    if (start < 0){ start = 0; it.side = 's'; }                    // clamp to the left edge
+    else if (start + it.w > W){ start = W - it.w; it.side = 'e'; } // and to the right
+    let lv = 0;
+    while (ends[lv] != null && start < ends[lv] + 8) lv++;
+    ends[lv] = start + it.w;
+    it.lv = lv;
+  }
+  return items;
+}
+function renderSpeeds(){
+  const rows = SPEEDS.rows.filter(r => r.tag === 'general' || !tagSel.size || tagSel.has(r.tag));
+  const W = Math.max(240, byId('chart').clientWidth || 340);
+  let html = `<p class="note">Every limit below is an answer in the question bank, in km/h.
+      Tap any branch to go to the question it comes from.</p>
+    <div class="vchips" id="vchips">${VEHS.map(([label, tags], i) =>
+      `<button data-i="${i}" aria-pressed="${
+        (!tags.length && !tagSel.size) || (tags.length > 1 && tagSel.has(tags[1]))}">${label}</button>`).join('')}</div>
+    <div class="axis">${[0,20,40,60,80].map(v =>
+      `<i style="left:${v / SPEEDS.axis * 100}%">${v}</i>`).join('')}</div>`;
+
+  for (const r of rows){
+    const items = layout(r.marks, W);
+    const depth = Math.max(...items.map(i => i.lv));
+    html += `<div class="srow"><h3>${r.v}</h3>
+      <div class="track" style="margin-bottom:${28 + depth * 17}px">${items.map(m => {
+        const stem = 6 + m.lv * 17;
+        return `<button class="mk ${m.side}" style="left:${m.x / W * 100}%;--stem:${stem}px"
+          data-n="${m.q}" title="Q${m.q}: ${esc(r.v)} — ${esc(m.at)}">
+          <span class="dot"></span><span class="stem"></span>
+          <span class="lbl"><b>${m.kmh}</b> ${esc(m.at)}</span></button>`;
+      }).join('')}</div></div>`;
+  }
+  html += `<h2 class="sec">Worth knowing</h2>` +
+    SPEEDS.notes.map(n => `<p class="note">${esc(n)}</p>`).join('');
+  byId('chart').innerHTML = html;
+  [...byId('chart').querySelectorAll('.mk')].forEach(b => b.onclick = () => jumpTo(+b.dataset.n));
+  [...byId('chart').querySelectorAll('#vchips button')].forEach(b => b.onclick = () => {
+    tagSel = new Set(VEHS[+b.dataset.i][1]); applyFilters();
+  });
+}
+
+/* ---------- views ---------- */
+let view = ['study','signs','speeds'].includes(ui0.view) ? ui0.view : 'study';
+function paint(){ view === 'signs' ? renderSheet() : view === 'speeds' ? renderSpeeds() : render(); }
+function setView(v){
+  view = v;
+  document.body.dataset.view = v;
+  document.querySelectorAll('#views button').forEach(b =>
+    b.setAttribute('aria-selected', b.dataset.view === v));
+  byId('stage').hidden = v !== 'study';
+  byId('sheet').hidden = v !== 'signs';
+  byId('chart').hidden = v !== 'speeds';
+  paint(); saveUI();
+}
+let rz;   // the chart's label stacking depends on width, so lay it out again after a resize
+addEventListener('resize', () => { clearTimeout(rz);
+  rz = setTimeout(() => { if (view === 'speeds') renderSpeeds(); }, 150); });
 
 /* ---------- theme ---------- */
 function setTheme(t, remember){
@@ -704,6 +1030,14 @@ byId('fclear').onclick = clearFilters;
 byId('fdone').onclick = () => filters.close();
 byId('fclose').onclick = () => filters.close();
 document.querySelectorAll('#filters .tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+document.querySelectorAll('#views button').forEach(b => b.onclick = () => setView(b.dataset.view));
+byId('searchbtn').onclick = openSearch;
+byId('sclose').onclick = () => search.close();
+byId('sq').oninput = drawHits;
+byId('sq').onkeydown = e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); moveHit(e.key === 'ArrowUp' ? -1 : 1); }
+  else if (e.key === 'Enter'){ e.preventDefault(); if (hits[cur]) jumpTo(hits[cur].c.n); }
+};
 byId('theme').onclick = () =>
   setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
 byId('flipmode').onclick = () => {
@@ -719,8 +1053,11 @@ byId('reset').onclick = () => dlg.showModal();
 byId('doreset').onclick = () => { db = {}; save(); dlg.close(); counts(); buildQueue(false); render(); };
 
 addEventListener('keydown', e => {
-  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open || filters.open) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open || filters.open || search.open) return;
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;   // the sheet's filter box
+  if (e.key === '/'){ e.preventDefault(); openSearch(); return; }
   if (e.key.toLowerCase() === 'f'){ e.preventDefault(); openFilters(); return; }
+  if (view !== 'study') return;
   // let the focused seek slider handle its own arrow/space keys
   if (e.target === seek && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home','End'].includes(e.key)) return;
   const c = queue[qi]; if (!c) return;
@@ -736,6 +1073,7 @@ setTheme(document.documentElement.dataset.theme, false);
 if (revealMode){ byId('flipmode').classList.add('on'); byId('flipmode').textContent = '◑'; }
 paintShuffle(); paintTags(); counts();
 setDeck(pools[ui0.deck] ? ui0.deck : 'all', ui0.n);    // resume where the last visit ended
+setView(view);
 </script>
 </body>
 </html>

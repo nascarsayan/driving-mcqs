@@ -1,0 +1,57 @@
+{
+"axis": 80,
+"rows": [
+ {"v": "Motor cycle", "tag": "two-wheeler", "marks": [
+   {"kmh": 25, "at": "Near school", "q": 178},
+   {"kmh": 30, "at": "City at night", "q": 189},
+   {"kmh": 40, "at": "In cities", "q": 184},
+   {"kmh": 40, "at": "Ghat road", "q": 195},
+   {"kmh": 50, "at": "Maximum", "q": 174}]},
+
+ {"v": "Motor car / LMV", "tag": "car", "marks": [
+   {"kmh": 25, "at": "Near school", "q": 176},
+   {"kmh": 40, "at": "Ghat road", "q": 194},
+   {"kmh": 60, "at": "Maximum", "q": 197},
+   {"kmh": 70, "at": "National highway", "q": 170}]},
+
+ {"v": "Auto-rickshaw", "tag": "auto", "marks": [
+   {"kmh": 25, "at": "Near school", "q": 192},
+   {"kmh": 30, "at": "In cities", "q": 209},
+   {"kmh": 30, "at": "Ghat road", "q": 207},
+   {"kmh": 40, "at": "Maximum", "q": 196}]},
+
+ {"v": "Medium motor vehicle", "tag": "transport", "marks": [
+   {"kmh": 15, "at": "Near school", "q": 206},
+   {"kmh": 35, "at": "Ghat road", "q": 211},
+   {"kmh": 65, "at": "Maximum", "q": 198}]},
+
+ {"v": "Heavy motor vehicle", "tag": "transport", "marks": [
+   {"kmh": 15, "at": "Near school", "q": 203},
+   {"kmh": 35, "at": "Ghat road", "q": 208},
+   {"kmh": 45, "at": "In cities", "q": 182},
+   {"kmh": 65, "at": "Maximum", "q": 210}]},
+
+ {"v": "Heavy passenger vehicle", "tag": "transport", "marks": [
+   {"kmh": 15, "at": "Near school", "q": 204}]},
+
+ {"v": "Truck / goods carriage", "tag": "transport", "marks": [
+   {"kmh": 60, "at": "National highway", "q": 177}]},
+
+ {"v": "Ambulance", "tag": "general", "marks": [
+   {"kmh": 60, "at": "Maximum", "q": 404}]},
+
+ {"v": "Any vehicle towing another", "tag": "general", "marks": [
+   {"kmh": 24, "at": "Maximum", "q": 186}]},
+
+ {"v": "Passing a procession", "tag": "general", "marks": [
+   {"kmh": 15, "at": "Procession", "q": 201},
+   {"kmh": 25, "at": "Men at work / troops", "q": 356}]}
+],
+"notes": [
+ "The motor car is the only vehicle the bank permits above 60 km/h, and only on a national highway, at 70 (Q175, Q170).",
+ "A motor cycle may not be driven at 60 km/h under any circumstance (Q188). After a \"Restrictions end\" sign it is still no more than 50 (Q314).",
+ "Ghat roads, motor car: the bank answers this two ways. Q194 gives 40 km/h, while Q187 names the motor car as the vehicle not permitted above 30 km/h. Learn both as printed.",
+ "Passing a procession is 15 km/h (Q201), but passing men at work or a body of troops is 25 km/h (Q356).",
+ "A speed-limit sign showing 50 means not exceeding 50 (Q60), and on the pictured carriageway you drive below 50 (Q243)."
+]
+}

@@ -19,9 +19,11 @@ sign images embedded, so it also works offline — save the page and open it on 
 | **Jump anywhere** | Drag the progress bar at the top — it's a scrubber. A bubble shows which question you'd land on, and the card only changes when you let go |
 | **Reveal mode** | The ◐ button hides the multiple choice — read the question, press <kbd>R</kbd> to flip, like a paper flashcard |
 | **Tricky deck** | Auto-collects every card you miss more often than you get right |
+| **Themes** | Light and dark, following your system by default — the ☀/☾ button overrides it |
 
-Progress is saved in your browser's local storage, so you can close the tab and pick up where you
-left off. The ⟳ button clears it.
+Everything is saved in your browser's local storage: your Leitner boxes and stars, your all-time
+correct/wrong totals, and **which card you were on**. Refresh or close the tab and you come back to
+the same question in the same deck, with the same totals. The ⟳ button clears it.
 
 Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star.
 

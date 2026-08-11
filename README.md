@@ -15,7 +15,7 @@ Three views, switched from the header:
 | **Study** | The flashcards — spaced repetition, decks, filters |
 | **Signs** | Every picture in the bank as a cheat sheet: 73 road signs, the 7 driver hand signals and 15 road-marking photos, each with what it means. Filter it by text, or tap one to go and be quizzed on it |
 | **Speeds** | Every speed limit in the bank on one 0–80 km/h ray per vehicle, so you can see at a glance that a motor cycle does 25 near a school, 30 in the city at night, 40 in the city and 50 flat out. Filter by vehicle type; tap a branch for the question it came from |
-| **Numbers** | Everything else you have to memorise. Load and dimension limits as scale drawings of a lorry, a tow and a restriction gantry; the four time limits on a log ray; ages, fines and the blood-alcohol limit as a plain list |
+| **Numbers** | Everything else you have to memorise. Load and dimension limits as scale drawings of a lorry, a tow and a restriction gantry; the four time limits on a log ray; ages, fines, the blood-alcohol limit and the eight Motor Vehicles Act sections as plain lists |
 
 ## Studying
 
@@ -48,8 +48,14 @@ the rear-projection limit as *"one meter"* in words rather than 100 cm.
 What gets a picture and what gets a list is deliberate. The load and dimension limits are drawn,
 to scale at 33 px to the metre, because they are physical facts and a lorry with arrows on it says
 it faster than a sentence. The four time limits share a **log** ray, because 24 hours and 15 years
-cannot sit on the same linear axis. Ages, fines and the blood-alcohol threshold are one-off facts
-with nothing to compare them against, so they are a plain list — a chart there would be decoration.
+cannot sit on the same linear axis. Ages, fines, the blood-alcohol threshold and the Act sections
+are lists: the first three are one-off facts with nothing to compare them against, and a section
+number is an identifier rather than a quantity — 185 is not "more" than 122. A chart for either
+would be decoration.
+
+The eight sections the bank names: **112** speed · **113** permitted weight · **122** leaving a
+vehicle dangerously · **129** helmets · **131** unguarded level crossings · **184** dangerous
+driving · **185** drink and drugs, plus **CMVR 21(25)** for using a phone at the wheel.
 
 **There is no weight chart, because the bank contains no weight figure at all.** Every weight answer
 is qualitative: the load is whatever the permit allows (Q190), the limit is posted on an axle-weight

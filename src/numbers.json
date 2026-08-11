@@ -43,6 +43,20 @@
     "what": "Minimum fine for overloading a goods carriage, and the cap on a drunk-driving fine — which can also be six months inside"},
    {"v": "₹100",  "n": "100",  "q": 416, "what": "Fine for not wearing a seat belt"}]},
 
+ {"title": "Motor Vehicles Act", "note": "numbers you quote, not measure — the bank names eight",
+  "items": [
+   {"v": "Section 112", "n": "112", "q": 199, "what": "Speed limits are not to be exceeded"},
+   {"v": "Section 113", "n": "113", "q": 200, "what": "Nor is the weight you are permitted to carry"},
+   {"v": "Section 122", "n": "122", "q": 401, "what": "Leaving a vehicle in a dangerous position"},
+   {"v": "Section 129", "n": "129", "q": 205, "what": "A motor cycle rider must wear a helmet"},
+   {"v": "Section 131", "n": "131", "q": 403,
+    "what": "The driver's duties at an unguarded railway level crossing"},
+   {"v": "Section 184", "n": "184", "q": 277, "what": "Dangerous driving"},
+   {"v": "Section 185", "n": "185", "q": 276, "also": [402],
+    "what": "Driving under the influence of drink or drugs"},
+   {"v": "CMVR 21(25)", "n": "21(25)", "q": 409,
+    "what": "Using a mobile phone while driving — disqualification, not just a fine"}]},
+
  {"title": "Everything else", "items": [
    {"v": "30 mg / 100 ml", "n": "30", "q": 417,
     "what": "Blood alcohol above which driving is punishable"},

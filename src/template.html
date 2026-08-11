@@ -1098,7 +1098,8 @@ function renderNumbers(){
     <div class="srow"><div class="track" style="margin-bottom:${t.pad}px">${t.html}</div></div>`;
 
   for (const g of N.lists)
-    html += `<h2 class="sec">${esc(g.title)}</h2><div class="facts">${g.items.map(i =>
+    html += `<h2 class="sec">${esc(g.title)}${g.note ? `<span>${esc(g.note)}</span>` : ''}</h2>
+      <div class="facts">${g.items.map(i =>
       `<button class="fact" data-n="${i.q}"><b>${esc(i.v)}</b><span>${esc(i.what)}</span>
          <i>${qlinks(i)}</i></button>`).join('')}</div>`;
 

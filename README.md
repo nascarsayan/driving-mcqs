@@ -14,6 +14,7 @@ sign images embedded, so it also works offline — save the page and open it on 
 |---|---|
 | **Answer** | Click an option, or press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> — you get instant feedback with the correct answer |
 | **Decks** | All · Signs (95) · Rules (336) · Starred · Tricky |
+| **Licence categories** | The funnel button filters by what you're actually sitting for. "Two-wheeler exam" drops the 42 car, goods-carriage, auto and tractor questions, leaving 389 |
 | **Spaced repetition** | Leitner boxes: a right answer promotes a card (New → Learning → … → Mastered), a wrong one sends it back to the start |
 | **Order** | Question order by default (Q1 → Q436); hit the shuffle button or <kbd>X</kbd> to randomise, weakest cards first |
 | **Jump anywhere** | Drag the progress bar at the top — it's a scrubber. A bubble shows which question you'd land on, and the card only changes when you let go |
@@ -47,6 +48,35 @@ Two notes on fidelity to the source:
 - Two run-together words in the PDF's own text (`causinginjury`, `nearestpolice`) were split. Nothing
   else was reworded — questions, options and answers are verbatim.
 
+## Licence categories
+
+The PDF ships one undifferentiated list, but not all of it is relevant to every candidate — speed
+limits for goods carriages don't help someone sitting a two-wheeler test. Each question is tagged:
+
+| Category | Questions | |
+|---|---|---|
+| General | 370 | Signs, signals, documents, right of way, first aid, vehicle control — everyone |
+| Two-wheeler | 19 | Rider age, pillion, helmets, motorcycle speed limits and handling |
+| Car / LMV | 14 | Motor-car speed limits, seat belts, car tax and handling |
+| Auto-rickshaw | 5 | Three-wheeler speed limits and passenger rules |
+| Transport / heavy | 22 | Goods carriages, trucks, heavy and public service vehicles |
+| Tractor | 2 | Tractor-specific rules |
+
+Selecting categories shows questions carrying **any** of them, so "General + Two-wheeler" is the
+two-wheeler syllabus, while "Two-wheeler" alone is the 19 bike-specific ones for focused drilling.
+The quick picks in the dialog set the common combinations.
+
+These tags are a **reading of the questions, not official metadata** — the PDF has no category
+field. The rule applied was *when in doubt, general*: a question wrongly left in costs you a few
+seconds, one wrongly filtered out costs you a mark. So anything about signs, road discipline or
+vehicle control (gears, brakes, mirrors, tyres — a motorcycle has those too) stays general, and only
+questions unmistakably about one class of vehicle are narrowed. The real exam can still draw from
+the whole bank, so treat this as prioritisation, not a guarantee.
+
+Tags live in [`src/tags.json`](src/tags.json), keyed by question number, and are meant to be
+hand-edited — if you disagree with a call, change it there and rebuild. `tag.py` holds the original
+classification lists and only regenerates that file with `--force`.
+
 ## Development
 
 `index.html` at the repo root is a **generated file** — don't hand-edit it, since the question data
@@ -55,6 +85,7 @@ is inlined into it. Edit `src/` and rebuild:
 ```
 src/template.html   the actual app: markup, styles, logic, with __DATA__/__COUNT__ placeholders
 src/cards.json      431 questions - text, options, answer index, sign filename
+src/tags.json       question number -> licence categories (hand-maintained)
 src/signs/*.jpeg    95 sign images, one per question that has one
 ```
 

@@ -23,6 +23,7 @@
      (light) / lighter (dark) than stock shadcn to clear WCAG AA.
      ---------------------------------------------------------------- */
   :root[data-theme="light"]{
+    color-scheme:light;      /* native checkboxes, scrollbars and focus rings follow the theme */
     --bg:0 0% 100%;          --fg:240 10% 3.9%;
     --card:0 0% 100%;        --card-fg:240 10% 3.9%;
     --muted:240 5% 96%;      --muted-fg:240 4% 38%;
@@ -36,6 +37,7 @@
     --shadow-lg:0 10px 30px -10px rgb(0 0 0 / .18);
   }
   :root[data-theme="dark"]{
+    color-scheme:dark;
     --bg:240 10% 3.9%;       --fg:0 0% 98%;
     --card:240 6% 8%;        --card-fg:0 0% 98%;
     --muted:240 4% 15%;      --muted-fg:240 5% 68%;
@@ -84,6 +86,11 @@
         font-size:14px;transition:.13s;box-shadow:var(--shadow)}
   .icon:hover{color:hsl(var(--fg));background:hsl(var(--muted))}
   .icon.on{background:hsl(var(--primary));border-color:hsl(var(--primary));color:hsl(var(--primary-fg))}
+  .icon{position:relative}
+  .cnt{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;
+       background:hsl(var(--fg));color:hsl(var(--bg));font:600 10px/15px ui-sans-serif,system-ui;
+       font-style:normal;text-align:center;display:none}
+  .cnt.show{display:block}
 
   /* ---------- scrubbable progress bar ---------- */
   .prog{position:relative;height:3px;background:hsl(var(--muted))}
@@ -192,6 +199,20 @@
   .drow .btn:hover{background:hsl(var(--muted))}
   .drow .danger{background:hsl(var(--danger));border-color:hsl(var(--danger));color:hsl(var(--danger-bg));font-weight:600}
   .drow .danger:hover{background:hsl(var(--danger));opacity:.9}
+  .drow .btn.primary{background:hsl(var(--primary));border-color:hsl(var(--primary));color:hsl(var(--primary-fg))}
+
+  /* category filter dialog */
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+  .presets button{padding:6px 11px;border-radius:999px;border:1px solid hsl(var(--border));
+                  background:hsl(var(--subtle));font-size:13px;font-weight:500;color:hsl(var(--fg))}
+  .presets button:hover{background:hsl(var(--muted))}
+  .taglist{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+  .taglist label{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--radius);
+                 font-size:14px;cursor:pointer;border:1px solid transparent}
+  .taglist label:hover{background:hsl(var(--muted))}
+  .taglist input{accent-color:hsl(var(--primary));width:16px;height:16px;margin:0;flex:none}
+  .taglist .n{margin-left:auto;color:hsl(var(--muted-fg));font-size:12.5px;font-variant-numeric:tabular-nums}
+  .dhead{font-size:12px;color:hsl(var(--muted-fg));margin:0 0 7px;font-weight:500}
 
   @media (max-width:600px){
     .qtext{font-size:17.5px} .card{padding:16px} .hint{display:none}
@@ -224,6 +245,9 @@
       <button class="chip" data-deck="hard">Tricky<span class="c" id="c-hard"></span></button>
     </div>
     <div class="tools">
+      <button class="icon" id="tagbtn" title="Filter by licence category"><svg width="14" height="14"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><i class="cnt" id="tagcnt"></i></button>
       <button class="icon" id="theme" title="Switch theme">◑</button>
       <button class="icon" id="shuffle" title="Shuffle the deck">⇄</button>
       <button class="icon" id="flipmode" title="Switch to reveal-only mode (Anki style)">◐</button>
@@ -256,6 +280,20 @@
     <span class="hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> answer · <kbd>Space</kbd> next · <kbd>S</kbd> star · <kbd>X</kbd> shuffle · <kbd>R</kbd> reveal</span>
   </div>
 </footer>
+
+<dialog id="tagdlg">
+  <h3>Which licence are you studying for?</h3>
+  <p>Road signs and general rules apply to everyone. The rest is specific to one class of
+     vehicle — a two-wheeler candidate can skip the goods-carriage and motor-car questions.</p>
+  <p class="dhead">Quick picks</p>
+  <div class="presets" id="presets"></div>
+  <p class="dhead">Or choose categories</p>
+  <div class="taglist" id="taglist"></div>
+  <div class="drow">
+    <button class="btn" id="tagclear">Show everything</button>
+    <button class="btn primary" id="tagdone">Done</button>
+  </div>
+</dialog>
 
 <dialog id="dlg">
   <h3>Reset all progress?</h3>
@@ -294,8 +332,24 @@ const seek = byId('seek'), knob = byId('knob'), tip = byId('tip'), prog = byId('
 
 function saveUI(){
   localStorage.setItem(PKEY, JSON.stringify(
-    {deck, n: queue[qi] ? queue[qi].n : null, reveal: revealMode}));
+    {deck, n: queue[qi] ? queue[qi].n : null, reveal: revealMode, tags: [...tagSel]}));
 }
+
+/* ---------- licence categories ----------
+   Each question carries one or more tags. "general" means it applies to every
+   candidate; the rest are specific to a class of vehicle. Nothing selected = no
+   filter; otherwise a card shows if it carries ANY selected tag.               */
+const TAG_LABELS = {general:'General', 'two-wheeler':'Two-wheeler', car:'Car / LMV',
+                    auto:'Auto-rickshaw', transport:'Transport / heavy', tractor:'Tractor'};
+const PRESETS = [
+  ['Two-wheeler exam',   ['general','two-wheeler']],
+  ['Car / LMV exam',     ['general','car']],
+  ['Auto-rickshaw',      ['general','auto']],
+  ['Transport / heavy',  ['general','transport']],
+  ['Tractor',            ['general','tractor']],
+];
+let tagSel = new Set(Array.isArray(ui0.tags) ? ui0.tags.filter(t => TAG_LABELS[t]) : []);
+const tagOk = c => !tagSel.size || c.t.some(t => tagSel.has(t));
 
 /* ---------- deck building ---------- */
 const pools = {
@@ -305,9 +359,10 @@ const pools = {
   starred:c => st(c.n).star,
   hard:   c => st(c.n).bad > st(c.n).ok,
 };
+const inDeck = (c, k) => pools[k](c) && tagOk(c);      // deck AND category filter
 function buildQueue(keepCard, wantN){
   const cur = wantN != null ? wantN : (keepCard && queue[qi] ? queue[qi].n : null);
-  const pool = CARDS.filter(pools[deck]);
+  const pool = CARDS.filter(c => inDeck(c, deck));
   if (shuffled){
     // weakest Leitner boxes first, randomised within each box
     const groups = [[],[],[],[],[],[]];
@@ -322,7 +377,7 @@ function buildQueue(keepCard, wantN){
   if (qi >= queue.length) qi = 0;
 }
 function counts(){
-  for (const k in pools) byId('c-'+k).textContent = ' ' + CARDS.filter(pools[k]).length;
+  for (const k in pools) byId('c-'+k).textContent = ' ' + CARDS.filter(c => inDeck(c, k)).length;
 }
 function totals(){        // lifetime tallies, so they survive a refresh
   let ok=0, bad=0;
@@ -334,10 +389,13 @@ function totals(){        // lifetime tallies, so they survive a refresh
 function render(){
   const c = queue[qi];
   if (!c){
-    stage.innerHTML = `<div class="empty"><h2>Nothing in this deck yet</h2>
-      <p>${deck==='starred' ? 'Star cards with the ★ button (or the S key) to build a review list.'
+    const filtered = tagSel.size && CARDS.some(x => pools[deck](x));   // deck has cards, tags hid them
+    stage.innerHTML = `<div class="empty"><h2>${filtered ? 'No cards match these categories' : 'Nothing in this deck yet'}</h2>
+      <p>${filtered ? 'This deck has no questions in the licence categories you picked.'
+        : deck==='starred' ? 'Star cards with the ★ button (or the S key) to build a review list.'
         : 'Answer a few cards wrong and they will collect here for extra drilling.'}</p>
-      <button class="btn" onclick="setDeck('all')">Back to all cards</button></div>`;
+      <button class="btn" onclick="${filtered ? 'clearTags()' : "setDeck('all')"}">${
+        filtered ? 'Show every category' : 'Back to all cards'}</button></div>`;
     updateStats(); return;
   }
   const s = st(c.n);
@@ -413,6 +471,46 @@ function toggleStar(){
   counts();
 }
 
+/* ---------- category filter ---------- */
+function paintTags(){
+  const n = tagSel.size, b = byId('tagbtn'), cnt = byId('tagcnt');
+  b.classList.toggle('on', n > 0);
+  cnt.textContent = n; cnt.classList.toggle('show', n > 0);
+  b.title = n ? 'Showing: ' + [...tagSel].map(t => TAG_LABELS[t]).join(', ')
+              : 'Filter by licence category';
+}
+function drawTagList(){
+  const list = byId('taglist'); list.innerHTML = '';
+  for (const t in TAG_LABELS){
+    const total = CARDS.filter(c => c.t.includes(t)).length;
+    const lab = document.createElement('label');
+    lab.innerHTML = `<input type="checkbox"${tagSel.has(t) ? ' checked' : ''}>
+      <span>${TAG_LABELS[t]}</span><span class="n">${total}</span>`;
+    lab.querySelector('input').onchange = e => {
+      e.target.checked ? tagSel.add(t) : tagSel.delete(t);
+      applyTags();
+    };
+    list.appendChild(lab);
+  }
+}
+function applyTags(){
+  paintTags();
+  buildQueue(true);        // stay on the current card when it survives the filter
+  render();
+}
+function clearTags(){ tagSel.clear(); drawTagList(); applyTags(); }
+function openTags(){
+  const box = byId('presets'); box.innerHTML = '';
+  for (const [label, tags] of PRESETS){
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = () => { tagSel = new Set(tags); drawTagList(); applyTags(); };
+    box.appendChild(b);
+  }
+  drawTagList();
+  tagdlg.showModal();
+}
+
 /* ---------- theme ---------- */
 function setTheme(t, remember){
   document.documentElement.dataset.theme = t;
@@ -486,7 +584,7 @@ function updateStats(){
   byId('s-total').textContent = queue.length;
   byId('s-ok').textContent = t.ok;
   byId('s-bad').textContent = t.bad;
-  const pool = CARDS.filter(pools[deck]);
+  const pool = CARDS.filter(c => inDeck(c, deck));
   const m = pool.filter(c => st(c.n).box >= 3).length;
   byId('s-mast').textContent = pool.length ? Math.round(m/pool.length*100)+'%' : '0%';
   byId('prev').disabled = qi === 0;
@@ -501,6 +599,9 @@ byId('next').onclick = () => go(1);
 byId('prev').onclick = () => go(-1);
 byId('skip').onclick = () => go(1);
 byId('shuffle').onclick = toggleShuffle;
+byId('tagbtn').onclick = openTags;
+byId('tagclear').onclick = clearTags;
+byId('tagdone').onclick = () => tagdlg.close();
 byId('theme').onclick = () =>
   setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
 byId('flipmode').onclick = () => {
@@ -516,7 +617,7 @@ byId('reset').onclick = () => dlg.showModal();
 byId('doreset').onclick = () => { db = {}; save(); dlg.close(); counts(); buildQueue(false); render(); };
 
 addEventListener('keydown', e => {
-  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open || tagdlg.open) return;
   // let the focused seek slider handle its own arrow/space keys
   if (e.target === seek && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home','End'].includes(e.key)) return;
   const c = queue[qi]; if (!c) return;
@@ -530,7 +631,7 @@ addEventListener('keydown', e => {
 
 setTheme(document.documentElement.dataset.theme, false);
 if (revealMode){ byId('flipmode').classList.add('on'); byId('flipmode').textContent = '◑'; }
-paintShuffle(); counts();
+paintShuffle(); paintTags(); counts();
 setDeck(pools[ui0.deck] ? ui0.deck : 'all', ui0.n);    // resume where the last visit ended
 </script>
 </body>

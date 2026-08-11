@@ -13,9 +13,12 @@ SRC, OUT = ROOT / "src", ROOT / "index.html"
 def main():
     t0 = time.perf_counter()
     cards = json.loads((SRC / "cards.json").read_text(encoding="utf-8"))
+    tags = json.loads((SRC / "tags.json").read_text(encoding="utf-8"))
 
-    # inline every sign image as a data URI so the page stays a single portable file
+    # attach licence-category tags, and inline every sign image as a data URI
+    # so the page stays a single portable file
     for c in cards:
+        c["t"] = tags.get(str(c["n"]), ["general"])
         if "img" in c:
             p = SRC / "signs" / c["img"]
             mime = mimetypes.guess_type(p.name)[0] or "image/jpeg"

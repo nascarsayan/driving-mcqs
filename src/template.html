@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fff'/%3E%3Cpath d='M22 14h9v27h17v9H22z' fill='%23e11d2e'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0f1216">
+<meta name="description" content="Interactive flashcards for the Indian learner's licence test - 431 questions and 95 road signs from the official Parivahan question bank. Works offline.">
+<title>Learner's Licence Flashcards — Parivahan Question Bank</title>
+<style>
+  :root{
+    --bg:#0f1216; --surface:#171b21; --surface-2:#1e242c; --line:#2a323d;
+    --text:#e8edf3; --muted:#94a3b3; --accent:#5aa9ff; --accent-dim:#1d3a5c;
+    --ok:#3fbf7f; --ok-dim:#12331f; --bad:#f2637e; --bad-dim:#3a151f; --star:#f5b53d;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font:16px/1.55 ui-sans-serif,system-ui,"Segoe UI",Roboto,Inter,sans-serif;
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column;
+  }
+  button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+  .wrap{width:100%;max-width:840px;margin:0 auto;padding:0 16px}
+
+  /* ---------- header ---------- */
+  header{border-bottom:1px solid var(--line);background:rgba(15,18,22,.92);backdrop-filter:blur(8px);position:sticky;top:0;z-index:20}
+  .bar{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+  .brand{font-weight:650;letter-spacing:-.01em;margin-right:auto;display:flex;align-items:center;gap:9px}
+  .brand small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);letter-spacing:0}
+  .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(145deg,var(--accent),#7c5cff);flex:none}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);
+        font-size:13px;color:var(--muted);transition:.15s;white-space:nowrap}
+  .chip:hover{border-color:#3b4756;color:var(--text)}
+  .chip[aria-pressed="true"]{background:var(--accent-dim);border-color:var(--accent);color:#cfe6ff}
+  .chip .c{opacity:.65;font-variant-numeric:tabular-nums;margin-left:4px}
+  .icon{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line);
+        background:var(--surface);color:var(--muted);font-size:15px;transition:.15s}
+  .icon:hover{color:var(--text);border-color:#3b4756}
+  .icon.on{color:#cfe6ff;border-color:var(--accent);background:var(--accent-dim)}
+
+  /* ---------- scrubbable progress bar ---------- */
+  .prog{position:relative;height:3px;background:var(--surface-2)}
+  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#7c5cff);transition:width .3s}
+  .prog.scrub i{transition:none}
+  /* the real control: invisible, but a finger-sized hit area straddling the 3px bar */
+  #seek{position:absolute;left:0;top:-13px;width:100%;height:30px;margin:0;padding:0;
+        -webkit-appearance:none;appearance:none;background:transparent;opacity:0;cursor:pointer;z-index:3;touch-action:none}
+  #seek::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px}
+  #seek::-moz-range-thumb{width:30px;height:30px;border:0;border-radius:50%}
+  #seek:disabled{cursor:default}
+  /* the visible handle, positioned by JS */
+  .knob{position:absolute;top:50%;left:0;width:11px;height:11px;border-radius:50%;background:var(--text);
+        border:2px solid var(--accent);transform:translate(-50%,-50%);pointer-events:none;z-index:2;
+        box-shadow:0 1px 5px rgba(0,0,0,.55);transition:width .14s,height .14s,opacity .14s}
+  .prog.scrub .knob{width:19px;height:19px}
+  .prog.off .knob{opacity:0}
+  .tip{position:absolute;top:15px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--line);
+       color:var(--text);font-size:12px;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:8px;
+       white-space:nowrap;pointer-events:none;z-index:4;box-shadow:0 6px 18px rgba(0,0,0,.5);
+       opacity:0;transition:opacity .12s}
+  .prog.scrub .tip{opacity:1}
+
+  /* ---------- stats strip ---------- */
+  .stats{display:flex;gap:18px;padding:10px 0;font-size:12.5px;color:var(--muted);flex-wrap:wrap;align-items:center}
+  .stats b{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:1px}
+  .spacer{margin-left:auto}
+
+  /* ---------- card ---------- */
+  main.wrap{flex:1;padding:8px 16px 120px}   /* beats .wrap's shorthand — keeps the fixed footer clear of the card */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;
+        animation:in .22s ease-out}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .meta{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:12px;color:var(--muted)}
+  .qno{background:var(--surface-2);border:1px solid var(--line);padding:2px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+  .tag{background:var(--accent-dim);color:#cfe6ff;padding:2px 9px;border-radius:999px}
+  .box{background:var(--surface-2);padding:2px 9px;border-radius:999px}
+  .star{margin-left:auto;font-size:18px;line-height:1;color:#4b5563;transition:.15s}
+  .star:hover{color:var(--star)}
+  .star.on{color:var(--star)}
+  .qtext{font-size:20px;line-height:1.4;font-weight:550;letter-spacing:-.01em;margin:0 0 18px}
+  .sign{display:block;margin:0 auto 18px;max-width:230px;width:100%;border-radius:10px;background:#fff;padding:10px;
+        image-rendering:auto}
+
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+       padding:13px 15px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);
+       transition:border-color .15s,background .15s,transform .06s}
+  .opt:hover:not(:disabled){border-color:#4b5b6d;background:#232a33}
+  .opt:active:not(:disabled){transform:scale(.994)}
+  .opt:disabled{cursor:default}
+  .key{flex:none;width:22px;height:22px;border-radius:6px;background:#2c3542;color:var(--muted);
+       font-size:12px;font-weight:600;display:grid;place-items:center;margin-top:1px}
+  .opt.correct{border-color:var(--ok);background:var(--ok-dim)}
+  .opt.correct .key{background:var(--ok);color:#06210f}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-dim)}
+  .opt.wrong .key{background:var(--bad);color:#2b0710}
+  .opt.dim{opacity:.5}
+
+  .verdict{margin-top:16px;padding:12px 14px;border-radius:11px;font-size:14px;display:none;align-items:center;gap:9px}
+  .verdict.show{display:flex}
+  .verdict.good{background:var(--ok-dim);color:#a5e8c4}
+  .verdict.bad{background:var(--bad-dim);color:#ffc0cd}
+  .verdict .nextbtn{margin-left:auto;background:var(--text);color:#0f1216;font-weight:600;font-size:13px;
+                    padding:7px 14px;border-radius:8px;white-space:nowrap}
+  .verdict .nextbtn:hover{opacity:.88}
+
+  /* reveal mode */
+  .reveal{margin-top:4px}
+  .revealbtn{width:100%;padding:14px;border-radius:11px;border:1px dashed var(--line);color:var(--muted);background:var(--surface-2)}
+  .revealbtn:hover{color:var(--text);border-color:#4b5b6d}
+
+  /* ---------- footer nav ---------- */
+  footer{position:fixed;bottom:0;left:0;right:0;background:rgba(15,18,22,.94);backdrop-filter:blur(8px);
+         border-top:1px solid var(--line);padding:10px 0 max(10px,env(safe-area-inset-bottom))}
+  .nav{display:flex;align-items:center;gap:8px}
+  .nav .btn{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:14px;color:var(--muted)}
+  .nav .btn:hover:not(:disabled){color:var(--text);border-color:#3b4756}
+  .nav .btn:disabled{opacity:.35;cursor:default}
+  .nav .btn.primary{background:var(--accent);border-color:var(--accent);color:#04121f;font-weight:600}
+  .nav .btn.primary:hover{opacity:.9}
+  .hint{font-size:11.5px;color:#5f6c7b;margin-left:auto;text-align:right}
+  kbd{background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;
+      padding:1px 5px;font:600 10.5px ui-monospace,monospace;color:var(--muted)}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+  .empty h2{color:var(--text);font-size:19px;margin:0 0 8px}
+  .empty .btn{margin-top:16px;display:inline-block;padding:9px 16px;border-radius:9px;background:var(--accent);color:#04121f;font-weight:600}
+
+  dialog{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r);
+         padding:22px;max-width:420px;width:calc(100% - 32px)}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  dialog h3{margin:0 0 10px;font-size:17px}
+  dialog p{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .drow{display:flex;gap:8px;justify-content:flex-end}
+  .drow .btn{padding:8px 14px;border-radius:9px;border:1px solid var(--line);font-size:14px}
+  .drow .danger{background:var(--bad);border-color:var(--bad);color:#2b0710;font-weight:600}
+
+  @media (max-width:560px){
+    .qtext{font-size:18px} .card{padding:17px} .hint{display:none}
+    .brand small{display:none}
+    #seek{top:-17px;height:38px}          /* bigger thumb target for touch */
+    .knob{width:14px;height:14px}
+    .tip{font-size:13px;padding:5px 11px;top:17px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand"><span class="logo"></span>
+      <span>Learner's Licence Flashcards<small>Parivahan official question bank · __COUNT__ questions</small></span>
+    </div>
+    <div class="chips" id="modes">
+      <button class="chip" data-deck="all">All<span class="c" id="c-all"></span></button>
+      <button class="chip" data-deck="signs">Signs<span class="c" id="c-signs"></span></button>
+      <button class="chip" data-deck="text">Rules<span class="c" id="c-text"></span></button>
+      <button class="chip" data-deck="starred">★<span class="c" id="c-starred"></span></button>
+      <button class="chip" data-deck="hard">Tricky<span class="c" id="c-hard"></span></button>
+    </div>
+    <button class="icon" id="shuffle" title="Shuffle the deck">⇄</button>
+    <button class="icon" id="flipmode" title="Switch to reveal-only mode (Anki style)">◐</button>
+    <button class="icon" id="reset" title="Reset all progress">⟳</button>
+  </div>
+  <div class="prog" id="prog">
+    <i id="bar"></i>
+    <span class="knob" id="knob"></span>
+    <span class="tip" id="tip"></span>
+    <input type="range" id="seek" min="1" max="1" value="1" step="1" aria-label="Jump to a card">
+  </div>
+</header>
+
+<div class="wrap stats">
+  <span><i class="dot" style="background:var(--accent)"></i>Card <b id="s-pos">0</b> of <b id="s-total">0</b></span>
+  <span><i class="dot" style="background:var(--ok)"></i>Correct <b id="s-ok">0</b></span>
+  <span><i class="dot" style="background:var(--bad)"></i>Wrong <b id="s-bad">0</b></span>
+  <span><i class="dot" style="background:var(--muted)"></i><b id="s-order">In order</b></span>
+  <span class="spacer">Mastered <b id="s-mast">0%</b> of deck</span>
+</div>
+
+<main class="wrap"><div id="stage"></div></main>
+
+<footer>
+  <div class="wrap nav">
+    <button class="btn" id="prev">← Back</button>
+    <button class="btn" id="skip">Skip</button>
+    <button class="btn primary" id="next">Next →</button>
+    <span class="hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> answer · <kbd>Space</kbd> next · <kbd>S</kbd> star · <kbd>X</kbd> shuffle · <kbd>R</kbd> reveal</span>
+  </div>
+</footer>
+
+<dialog id="dlg">
+  <h3>Reset all progress?</h3>
+  <p>This clears your Leitner boxes, stars, and session score for all __COUNT__ cards. It cannot be undone.</p>
+  <div class="drow">
+    <button class="btn" value="cancel" onclick="dlg.close()">Cancel</button>
+    <button class="btn danger" id="doreset">Reset everything</button>
+  </div>
+</dialog>
+
+<script>
+const CARDS = __DATA__;
+
+/* ---------- persistence: Leitner box per card ---------- */
+const KEY='ll-flash-v1', SKEY='ll-flash-shuffle';
+let db = JSON.parse(localStorage.getItem(KEY) || '{}');
+const BLANK = Object.freeze({box:0,seen:0,ok:0,bad:0,star:0});
+const st  = n => db[n] || BLANK;                                        // read: never writes
+const mut = n => db[n] || (db[n] = {box:0,seen:0,ok:0,bad:0,star:0});   // write: creates on demand
+const save = () => localStorage.setItem(KEY, JSON.stringify(db));
+
+let deck='all', queue=[], qi=0, answered=null, revealMode=false;
+let shuffled = localStorage.getItem(SKEY) === '1';    // default: straight question order
+let sess={ok:0,bad:0};
+
+const byId = id => document.getElementById(id);
+const stage = byId('stage');
+const seek = byId('seek'), knob = byId('knob'), tip = byId('tip'), prog = byId('prog');
+
+/* ---------- deck building ---------- */
+const pools = {
+  all:    c => true,
+  signs:  c => !!c.img,
+  text:   c => !c.img,
+  starred:c => st(c.n).star,
+  hard:   c => st(c.n).bad > st(c.n).ok,
+};
+function buildQueue(keepCard){
+  const cur = keepCard && queue[qi] ? queue[qi].n : null;
+  const pool = CARDS.filter(pools[deck]);
+  if (shuffled){
+    // weakest Leitner boxes first, randomised within each box
+    const groups = [[],[],[],[],[],[]];
+    for (const c of pool) groups[Math.min(st(c.n).box,5)].push(c);
+    for (const g of groups) for (let i=g.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[g[i],g[j]]=[g[j],g[i]];}
+    queue = groups.flat();
+  } else {
+    queue = pool.slice().sort((a,b) => a.n - b.n);     // Q1 → Q436, exactly as printed
+  }
+  const at = cur === null ? -1 : queue.findIndex(c => c.n === cur);
+  qi = at >= 0 ? at : 0;                                // toggling order keeps you on the same card
+  if (qi >= queue.length) qi = 0;
+}
+function counts(){
+  for (const k in pools) byId('c-'+k).textContent = ' ' + CARDS.filter(pools[k]).length;
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  const c = queue[qi];
+  if (!c){
+    stage.innerHTML = `<div class="empty"><h2>Nothing in this deck yet</h2>
+      <p>${deck==='starred' ? 'Star cards with the ★ button (or the S key) to build a review list.'
+        : 'Answer a few cards wrong and they will collect here for extra drilling.'}</p>
+      <button class="btn" onclick="setDeck('all')">Back to all cards</button></div>`;
+    updateStats(); return;
+  }
+  const s = st(c.n);
+  const boxes = ['New','Learning','Familiar','Known','Strong','Mastered'];
+  stage.innerHTML = `
+    <div class="card">
+      <div class="meta">
+        <span class="qno">Q${c.n}</span>
+        ${c.img ? '<span class="tag">Road sign</span>' : ''}
+        <span class="box">${boxes[Math.min(s.box,5)]}</span>
+        ${s.seen ? `<span class="box">${s.ok}/${s.seen} correct</span>` : ''}
+        <button class="star ${s.star?'on':''}" id="starbtn" title="Star this card (S)">${s.star?'★':'☆'}</button>
+      </div>
+      ${c.img ? `<img class="sign" src="${c.img}" alt="Road sign for question ${c.n}">` : ''}
+      <p class="qtext">${esc(c.q)}</p>
+      ${revealMode ? renderReveal(c) : renderOpts(c)}
+      <div class="verdict" id="verdict"></div>
+    </div>`;
+
+  byId('starbtn').onclick = toggleStar;
+  if (revealMode) byId('revealbtn').onclick = () => reveal(c);
+  else [...document.querySelectorAll('.opt')].forEach(b => b.onclick = () => answer(c, +b.dataset.i));
+  answered = null;
+  updateStats();
+}
+const renderOpts = c => `<div class="opts">${c.o.map((o,i)=>
+  `<button class="opt" data-i="${i}"><span class="key">${i+1}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
+const renderReveal = c => `<div class="opts reveal">${c.o.map((o,i)=>
+  `<div class="opt" data-i="${i}" style="cursor:default"><span class="key">${i+1}</span><span>${esc(o)}</span></div>`).join('')}
+  <button class="revealbtn" id="revealbtn">Tap to reveal the answer &nbsp;·&nbsp; <kbd>R</kbd></button></div>`;
+const esc = s => s.replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+/* ---------- answering ---------- */
+function answer(c, pick){
+  if (answered !== null) return;
+  answered = pick;
+  const ok = pick === c.a, s = mut(c.n);
+  s.seen++; ok ? s.ok++ : s.bad++;
+  s.box = ok ? Math.min(s.box+1,5) : 0;          // Leitner promote / reset
+  ok ? sess.ok++ : sess.bad++;
+  save();
+
+  document.querySelectorAll('.opt').forEach(b=>{
+    const i = +b.dataset.i; b.disabled = true;
+    if (i === c.a) b.classList.add('correct');
+    else if (i === pick) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  showVerdict(ok, c);
+  // requeue misses only when shuffling — in question order the sequence stays exact
+  if (!ok && shuffled) queue.splice(Math.min(qi+4, queue.length), 0, c);
+  updateStats();
+}
+function reveal(c){
+  if (answered !== null) return;
+  answered = -1;
+  const s = mut(c.n); s.seen++; save();
+  document.querySelectorAll('.opt').forEach(b=>{
+    if (+b.dataset.i === c.a) b.classList.add('correct'); else b.classList.add('dim');
+  });
+  byId('revealbtn').remove();
+  showVerdict(null, c);
+}
+function showVerdict(ok, c){
+  const v = byId('verdict');
+  v.className = 'verdict show ' + (ok === false ? 'bad' : 'good');
+  v.innerHTML = `<span>${ok === null ? '' : ok ? '✔ Correct.' : '✘ Not quite.'}
+      Answer ${c.a+1}: <strong>${esc(c.o[c.a])}</strong></span>
+    <button class="nextbtn" onclick="go(1)">Next →</button>`;
+}
+function toggleStar(){
+  const s = mut(queue[qi].n); s.star = s.star ? 0 : 1; save();
+  const b = byId('starbtn'); b.classList.toggle('on', !!s.star); b.textContent = s.star ? '★' : '☆';
+  counts();
+}
+
+/* ---------- order ---------- */
+function toggleShuffle(){
+  shuffled = !shuffled;
+  localStorage.setItem(SKEY, shuffled ? '1' : '0');
+  paintShuffle();
+  buildQueue(true);      // stay on the card you were looking at
+  render();
+}
+function paintShuffle(){
+  const b = byId('shuffle');
+  b.classList.toggle('on', shuffled);
+  b.textContent = shuffled ? '⇄' : '⇅';
+  b.title = shuffled ? 'Shuffled — weakest cards first, random within. Click for question order.'
+                     : 'Question order (Q1 → Q436). Click to shuffle.';
+  byId('s-order').textContent = shuffled ? 'Shuffled' : 'In order';
+}
+
+/* ---------- seek bar: drag the progress bar to jump anywhere ---------- */
+function paintSeek(v){
+  const n = queue.length;
+  const pct = n > 1 ? (v-1)/(n-1)*100 : 0;
+  byId('bar').style.width = (n ? v/n*100 : 0) + '%';
+  knob.style.left = pct + '%';
+  tip.style.left = `clamp(52px, ${pct}%, calc(100% - 52px))`;
+  const c = queue[v-1];
+  tip.textContent = c ? `Q${c.n} · ${v} of ${n}` : '';
+}
+function syncSeek(){                       // keep the control in step with the queue
+  const n = queue.length;
+  seek.max = Math.max(1, n);
+  seek.value = n ? qi+1 : 1;
+  seek.disabled = !n;
+  prog.classList.toggle('off', !n);
+  paintSeek(n ? qi+1 : 1);
+}
+seek.addEventListener('input', () => { prog.classList.add('scrub'); paintSeek(+seek.value); });
+seek.addEventListener('change', () => {    // fires on release / keyboard step: commit the jump
+  prog.classList.remove('scrub');
+  qi = Math.min(+seek.value, queue.length) - 1;
+  render();
+});
+seek.addEventListener('pointerdown', () => prog.classList.add('scrub'));
+['pointerup','pointercancel','blur'].forEach(ev =>
+  seek.addEventListener(ev, () => prog.classList.remove('scrub')));
+
+/* ---------- navigation ---------- */
+function go(d){
+  if (d > 0 && qi >= queue.length-1) buildQueue(false); else qi = Math.max(0, qi+d);
+  render();
+}
+function setDeck(d){
+  deck = d; sess = {ok:0,bad:0};
+  document.querySelectorAll('#modes .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.deck === d));
+  buildQueue(false); render();
+}
+function updateStats(){
+  byId('s-pos').textContent = queue.length ? qi+1 : 0;
+  byId('s-total').textContent = queue.length;
+  byId('s-ok').textContent = sess.ok;
+  byId('s-bad').textContent = sess.bad;
+  const pool = CARDS.filter(pools[deck]);
+  const m = pool.filter(c => st(c.n).box >= 3).length;
+  byId('s-mast').textContent = pool.length ? Math.round(m/pool.length*100)+'%' : '0%';
+  byId('prev').disabled = qi === 0;
+  counts();                       // deck sizes shift as cards are starred or missed
+  syncSeek();
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('#modes .chip').forEach(b => b.onclick = () => setDeck(b.dataset.deck));
+byId('next').onclick = () => go(1);
+byId('prev').onclick = () => go(-1);
+byId('skip').onclick = () => go(1);
+byId('shuffle').onclick = toggleShuffle;
+byId('flipmode').onclick = () => {
+  revealMode = !revealMode;
+  const b = byId('flipmode');
+  b.classList.toggle('on', revealMode);
+  b.textContent = revealMode ? '◑' : '◐';
+  b.title = revealMode ? 'Reveal mode — read, then press R to flip. Click for multiple choice.'
+                       : 'Switch to reveal-only mode (Anki style)';
+  render();
+};
+byId('reset').onclick = () => dlg.showModal();
+byId('doreset').onclick = () => { db = {}; save(); sess = {ok:0,bad:0}; dlg.close(); counts(); buildQueue(false); render(); };
+
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open) return;
+  // let the focused seek slider handle its own arrow/space keys
+  if (e.target === seek && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home','End'].includes(e.key)) return;
+  const c = queue[qi]; if (!c) return;
+  if (['1','2','3'].includes(e.key)) { e.preventDefault(); if (!revealMode) answer(c, +e.key-1); }
+  else if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+  else if (e.key.toLowerCase() === 's') { e.preventDefault(); toggleStar(); }
+  else if (e.key.toLowerCase() === 'x') { e.preventDefault(); toggleShuffle(); }
+  else if (e.key.toLowerCase() === 'r' && revealMode) { e.preventDefault(); reveal(c); }
+});
+
+paintShuffle(); counts(); setDeck('all');
+</script>
+</body>
+</html>

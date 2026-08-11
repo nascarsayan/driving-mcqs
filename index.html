@@ -41,9 +41,27 @@
   .icon:hover{color:var(--text);border-color:#3b4756}
   .icon.on{color:#cfe6ff;border-color:var(--accent);background:var(--accent-dim)}
 
-  /* progress */
-  .prog{height:3px;background:var(--surface-2)}
+  /* ---------- scrubbable progress bar ---------- */
+  .prog{position:relative;height:3px;background:var(--surface-2)}
   .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#7c5cff);transition:width .3s}
+  .prog.scrub i{transition:none}
+  /* the real control: invisible, but a finger-sized hit area straddling the 3px bar */
+  #seek{position:absolute;left:0;top:-13px;width:100%;height:30px;margin:0;padding:0;
+        -webkit-appearance:none;appearance:none;background:transparent;opacity:0;cursor:pointer;z-index:3;touch-action:none}
+  #seek::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px}
+  #seek::-moz-range-thumb{width:30px;height:30px;border:0;border-radius:50%}
+  #seek:disabled{cursor:default}
+  /* the visible handle, positioned by JS */
+  .knob{position:absolute;top:50%;left:0;width:11px;height:11px;border-radius:50%;background:var(--text);
+        border:2px solid var(--accent);transform:translate(-50%,-50%);pointer-events:none;z-index:2;
+        box-shadow:0 1px 5px rgba(0,0,0,.55);transition:width .14s,height .14s,opacity .14s}
+  .prog.scrub .knob{width:19px;height:19px}
+  .prog.off .knob{opacity:0}
+  .tip{position:absolute;top:15px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--line);
+       color:var(--text);font-size:12px;font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:8px;
+       white-space:nowrap;pointer-events:none;z-index:4;box-shadow:0 6px 18px rgba(0,0,0,.5);
+       opacity:0;transition:opacity .12s}
+  .prog.scrub .tip{opacity:1}
 
   /* ---------- stats strip ---------- */
   .stats{display:flex;gap:18px;padding:10px 0;font-size:12.5px;color:var(--muted);flex-wrap:wrap;align-items:center}
@@ -124,6 +142,9 @@
   @media (max-width:560px){
     .qtext{font-size:18px} .card{padding:17px} .hint{display:none}
     .brand small{display:none}
+    #seek{top:-17px;height:38px}          /* bigger thumb target for touch */
+    .knob{width:14px;height:14px}
+    .tip{font-size:13px;padding:5px 11px;top:17px}
   }
 </style>
 </head>
@@ -145,7 +166,12 @@
     <button class="icon" id="flipmode" title="Switch to reveal-only mode (Anki style)">◐</button>
     <button class="icon" id="reset" title="Reset all progress">⟳</button>
   </div>
-  <div class="prog"><i id="bar"></i></div>
+  <div class="prog" id="prog">
+    <i id="bar"></i>
+    <span class="knob" id="knob"></span>
+    <span class="tip" id="tip"></span>
+    <input type="range" id="seek" min="1" max="1" value="1" step="1" aria-label="Jump to a card">
+  </div>
 </header>
 
 <div class="wrap stats">
@@ -193,6 +219,7 @@ let sess={ok:0,bad:0};
 
 const byId = id => document.getElementById(id);
 const stage = byId('stage');
+const seek = byId('seek'), knob = byId('knob'), tip = byId('tip'), prog = byId('prog');
 
 /* ---------- deck building ---------- */
 const pools = {
@@ -323,6 +350,34 @@ function paintShuffle(){
   byId('s-order').textContent = shuffled ? 'Shuffled' : 'In order';
 }
 
+/* ---------- seek bar: drag the progress bar to jump anywhere ---------- */
+function paintSeek(v){
+  const n = queue.length;
+  const pct = n > 1 ? (v-1)/(n-1)*100 : 0;
+  byId('bar').style.width = (n ? v/n*100 : 0) + '%';
+  knob.style.left = pct + '%';
+  tip.style.left = `clamp(52px, ${pct}%, calc(100% - 52px))`;
+  const c = queue[v-1];
+  tip.textContent = c ? `Q${c.n} · ${v} of ${n}` : '';
+}
+function syncSeek(){                       // keep the control in step with the queue
+  const n = queue.length;
+  seek.max = Math.max(1, n);
+  seek.value = n ? qi+1 : 1;
+  seek.disabled = !n;
+  prog.classList.toggle('off', !n);
+  paintSeek(n ? qi+1 : 1);
+}
+seek.addEventListener('input', () => { prog.classList.add('scrub'); paintSeek(+seek.value); });
+seek.addEventListener('change', () => {    // fires on release / keyboard step: commit the jump
+  prog.classList.remove('scrub');
+  qi = Math.min(+seek.value, queue.length) - 1;
+  render();
+});
+seek.addEventListener('pointerdown', () => prog.classList.add('scrub'));
+['pointerup','pointercancel','blur'].forEach(ev =>
+  seek.addEventListener(ev, () => prog.classList.remove('scrub')));
+
 /* ---------- navigation ---------- */
 function go(d){
   if (d > 0 && qi >= queue.length-1) buildQueue(false); else qi = Math.max(0, qi+d);
@@ -341,9 +396,9 @@ function updateStats(){
   const pool = CARDS.filter(pools[deck]);
   const m = pool.filter(c => st(c.n).box >= 3).length;
   byId('s-mast').textContent = pool.length ? Math.round(m/pool.length*100)+'%' : '0%';
-  byId('bar').style.width = (queue.length ? (qi+1)/queue.length*100 : 0)+'%';
   byId('prev').disabled = qi === 0;
   counts();                       // deck sizes shift as cards are starred or missed
+  syncSeek();
 }
 
 /* ---------- wiring ---------- */
@@ -366,6 +421,8 @@ byId('doreset').onclick = () => { db = {}; save(); sess = {ok:0,bad:0}; dlg.clos
 
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey || dlg.open) return;
+  // let the focused seek slider handle its own arrow/space keys
+  if (e.target === seek && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home','End'].includes(e.key)) return;
   const c = queue[qi]; if (!c) return;
   if (['1','2','3'].includes(e.key)) { e.preventDefault(); if (!revealMode) answer(c, +e.key-1); }
   else if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); go(1); }

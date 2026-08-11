@@ -13,8 +13,8 @@ sign images embedded, so it also works offline — save the page and open it on 
 | | |
 |---|---|
 | **Answer** | Click an option, or press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> — you get instant feedback with the correct answer |
-| **Decks** | All · Signs (95) · Rules (336) · Starred · Tricky |
-| **Licence categories** | The funnel button filters by what you're actually sitting for. "Two-wheeler exam" drops the 42 car, goods-carriage, auto and tractor questions, leaving 389 |
+| **Decks** | All · Starred · Tricky |
+| **Filters** | The funnel button (<kbd>F</kbd>) opens a sheet with two tabs: **Licence**, for the class of vehicle you're sitting for, and **Topics**, for the subject. Within a tab your picks are OR'd, and the two tabs are AND'ed — "Two-wheeler + Speed limits" is the seven bike speed-limit questions |
 | **Spaced repetition** | Leitner boxes: a right answer promotes a card (New → Learning → … → Mastered), a wrong one sends it back to the start |
 | **Order** | Question order by default (Q1 → Q436); hit the shuffle button or <kbd>X</kbd> to randomise, weakest cards first |
 | **Jump anywhere** | Drag the progress bar at the top — it's a scrubber. A bubble shows which question you'd land on, and the card only changes when you let go |
@@ -26,7 +26,7 @@ Everything is saved in your browser's local storage: your Leitner boxes and star
 correct/wrong totals, and **which card you were on**. Refresh or close the tab and you come back to
 the same question in the same deck, with the same totals. The ⟳ button clears it.
 
-Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star.
+Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star · <kbd>F</kbd> filters.
 
 ## Where the questions come from
 
@@ -77,6 +77,37 @@ Tags live in [`src/tags.json`](src/tags.json), keyed by question number, and are
 hand-edited — if you disagree with a call, change it there and rebuild. `tag.py` holds the original
 classification lists and only regenerates that file with `--force`.
 
+## Topics
+
+The second filter tab is the subject. Every question carries one or two topics — 1.46 on average:
+
+| | | | | | |
+|---|--:|---|--:|---|--:|
+| Road signs | 82 | Traffic lights | 12 | Hand & turn signals | 21 |
+| Road markings | 19 | Lanes & position | 31 | Junctions & turns | 45 |
+| Overtaking | 31 | Parking | 30 | Speed limits | 39 |
+| Pedestrians & animals | 25 | Railway crossings | 5 | Horn & noise | 11 |
+| Lights & visibility | 19 | Defensive driving | 71 | Accidents & first aid | 15 |
+| Vehicle & controls | 50 | Safety gear | 12 | Loads & passengers | 28 |
+| Pollution & fuel | 11 | Documents & RC | 15 | Licence rules | 13 |
+| Offences & penalties | 34 | MV Act sections | 10 | | |
+
+Three of these are easy to conflate, so they are deliberately separate: **Road signs** is a sign
+posted beside the road, **Traffic lights** is the signal at the junction, and **Hand & turn signals**
+is a signal a driver gives — with an arm or an indicator. The seven `The signal represents..`
+pictures are the driver's arm signals. This question bank has **no traffic-police signal questions**;
+a policeman appears only as somebody who may or may not be directing an intersection (Q141, Q212,
+Q377).
+
+Like the licence categories, topics are a hand reading of all 431 questions rather than official
+metadata. A topic is only attached when someone revising that subject would actually want the
+question — piling on loosely related tags makes a filter useless. Sign pictures are tagged
+`Road signs` and get a second topic only when the sign itself is the subject (the horn signs, the
+parking signs, the level-crossing signs, the hazard signs), not for every directional arrow.
+They live in [`src/topics.json`](src/topics.json) and are hand-editable the same way; `topic.py`
+holds the per-question reading, asserts that every question is classified, and only regenerates with
+`--force`.
+
 ## Development
 
 `index.html` at the repo root is a **generated file** — don't hand-edit it, since the question data
@@ -86,6 +117,7 @@ is inlined into it. Edit `src/` and rebuild:
 src/template.html   the actual app: markup, styles, logic, with __DATA__/__COUNT__ placeholders
 src/cards.json      431 questions - text, options, answer index, sign filename
 src/tags.json       question number -> licence categories (hand-maintained)
+src/topics.json     question number -> subjects (hand-maintained)
 src/signs/*.jpeg    95 sign images, one per question that has one
 ```
 

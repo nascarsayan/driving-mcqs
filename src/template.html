@@ -194,25 +194,54 @@
   dialog h3{margin:0 0 9px;font-size:17px;letter-spacing:-.012em}
   dialog p{color:hsl(var(--muted-fg));font-size:14px;margin:0 0 18px}
   .drow{display:flex;gap:8px;justify-content:flex-end}
-  .drow .btn{padding:8px 14px;border-radius:calc(var(--radius) - 1px);border:1px solid hsl(var(--border));
-             font-size:14px;font-weight:500;background:hsl(var(--card))}
-  .drow .btn:hover{background:hsl(var(--muted))}
+  .drow .btn,.dfoot .btn{padding:8px 14px;border-radius:calc(var(--radius) - 1px);
+             border:1px solid hsl(var(--border));font-size:14px;font-weight:500;background:hsl(var(--card))}
+  .drow .btn:hover,.dfoot .btn:hover:not(:disabled){background:hsl(var(--muted))}
+  .dfoot .btn:disabled{cursor:default}
   .drow .danger{background:hsl(var(--danger));border-color:hsl(var(--danger));color:hsl(var(--danger-bg));font-weight:600}
   .drow .danger:hover{background:hsl(var(--danger));opacity:.9}
-  .drow .btn.primary{background:hsl(var(--primary));border-color:hsl(var(--primary));color:hsl(var(--primary-fg))}
+  .drow .btn.primary,.dfoot .btn.primary{background:hsl(var(--primary));
+             border-color:hsl(var(--primary));color:hsl(var(--primary-fg))}
 
-  /* category filter dialog */
+  /* ---------- filter sheet: sticky tabs, scrolling body, sticky footer ---------- */
+  #filters{padding:0;max-width:520px;max-height:min(86vh,720px);overflow:hidden}
+  /* an id selector would beat the UA rule that hides a closed dialog, so gate it on [open] */
+  #filters[open]{display:flex;flex-direction:column}
+  .dhd{display:flex;align-items:center;gap:8px;padding:11px 12px;flex:none;
+       border-bottom:1px solid hsl(var(--border))}
+  .tabs{display:flex;gap:3px;flex:1;background:hsl(var(--muted));padding:3px;
+        border-radius:calc(var(--radius) - 1px)}
+  .tab{flex:1;padding:7px 9px;border-radius:calc(var(--radius) - 3px);font-size:13.5px;font-weight:500;
+       color:hsl(var(--muted-fg));display:flex;align-items:center;justify-content:center;gap:6px;
+       transition:background .13s,color .13s}
+  .tab[aria-selected="true"]{background:hsl(var(--card));color:hsl(var(--fg));box-shadow:var(--shadow)}
+  .tab .tc{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:hsl(var(--primary));
+           color:hsl(var(--primary-fg));font:600 11px/18px ui-sans-serif,system-ui;display:none}
+  .tab .tc.show{display:block}
+  .dbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px}
+  .dbody p{margin:0 0 14px}
+  .dfoot{display:flex;align-items:center;gap:8px;flex:none;padding:11px 12px;
+         border-top:1px solid hsl(var(--border))}
+  .fcount{font-size:12.5px;color:hsl(var(--muted-fg));margin-right:auto;font-variant-numeric:tabular-nums}
+  .fcount b{color:hsl(var(--fg));font-weight:600}
+  .dhead{font-size:12px;color:hsl(var(--muted-fg));margin:0 0 7px;font-weight:500}
+
   .presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
   .presets button{padding:6px 11px;border-radius:999px;border:1px solid hsl(var(--border));
                   background:hsl(var(--subtle));font-size:13px;font-weight:500;color:hsl(var(--fg))}
   .presets button:hover{background:hsl(var(--muted))}
-  .taglist{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
-  .taglist label{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--radius);
-                 font-size:14px;cursor:pointer;border:1px solid transparent}
-  .taglist label:hover{background:hsl(var(--muted))}
-  .taglist input{accent-color:hsl(var(--primary));width:16px;height:16px;margin:0;flex:none}
-  .taglist .n{margin-left:auto;color:hsl(var(--muted-fg));font-size:12.5px;font-variant-numeric:tabular-nums}
-  .dhead{font-size:12px;color:hsl(var(--muted-fg));margin:0 0 7px;font-weight:500}
+
+  .taglist{display:flex;flex-direction:column;gap:2px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:3px}
+  .pick{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius);
+        font-size:14px;line-height:1.25;cursor:pointer;border:1px solid transparent}
+  .pick:hover{background:hsl(var(--muted))}
+  .pick input{accent-color:hsl(var(--primary));width:16px;height:16px;margin:0;flex:none}
+  .pick .n{margin-left:auto;padding-left:6px;color:hsl(var(--muted-fg));font-size:12px;
+           font-variant-numeric:tabular-nums}
+  .pick.on{background:hsl(var(--subtle));border-color:hsl(var(--border))}
+  .pick.none{opacity:.5}                 /* nothing left once the other tab's filter is applied */
+  .grid .pick{font-size:13px;padding:9px 8px}
 
   @media (max-width:600px){
     .qtext{font-size:17.5px} .card{padding:16px} .hint{display:none}
@@ -227,7 +256,15 @@
     .knob{width:14px;height:14px}
     .tip{font-size:13px;padding:5px 11px;top:16px}
     .opt{font-size:14.5px}
+    /* dialogs become bottom sheets — thumb-reachable, and the footer clears the home bar */
+    dialog{margin:auto auto 0;width:100%;max-width:none;border-radius:14px 14px 0 0;
+           border-bottom:0;animation:sheet .18s ease-out}
+    #filters{max-height:88vh}
+    .dfoot{padding-bottom:max(11px,env(safe-area-inset-bottom))}
+    .grid{grid-template-columns:1fr 1fr;gap:2px}
+    .grid .pick{gap:7px;padding:10px 7px}
   }
+  @keyframes sheet{from{transform:translateY(24px)}to{transform:none}}
 </style>
 </head>
 <body>
@@ -239,17 +276,15 @@
     </div>
     <div class="chips" id="modes">
       <button class="chip" data-deck="all">All<span class="c" id="c-all"></span></button>
-      <button class="chip" data-deck="signs">Signs<span class="c" id="c-signs"></span></button>
-      <button class="chip" data-deck="text">Rules<span class="c" id="c-text"></span></button>
       <button class="chip" data-deck="starred">★<span class="c" id="c-starred"></span></button>
       <button class="chip" data-deck="hard">Tricky<span class="c" id="c-hard"></span></button>
     </div>
     <div class="tools">
-      <button class="icon" id="tagbtn" title="Filter by licence category"><svg width="14" height="14"
+      <button class="icon" id="tagbtn" title="Filter questions (F)"><svg width="14" height="14"
         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
         stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg><i class="cnt" id="tagcnt"></i></button>
       <button class="icon" id="theme" title="Switch theme">◑</button>
-      <button class="icon" id="shuffle" title="Shuffle the deck">⇄</button>
+      <button class="icon" id="shuffle" title="Shuffle the deck"></button>
       <button class="icon" id="flipmode" title="Switch to reveal-only mode (Anki style)">◐</button>
       <button class="icon" id="reset" title="Reset all progress">⟳</button>
     </div>
@@ -281,17 +316,34 @@
   </div>
 </footer>
 
-<dialog id="tagdlg">
-  <h3>Which licence are you studying for?</h3>
-  <p>Road signs and general rules apply to everyone. The rest is specific to one class of
-     vehicle — a two-wheeler candidate can skip the goods-carriage and motor-car questions.</p>
-  <p class="dhead">Quick picks</p>
-  <div class="presets" id="presets"></div>
-  <p class="dhead">Or choose categories</p>
-  <div class="taglist" id="taglist"></div>
-  <div class="drow">
-    <button class="btn" id="tagclear">Show everything</button>
-    <button class="btn primary" id="tagdone">Done</button>
+<dialog id="filters" aria-label="Filter questions">
+  <div class="dhd">
+    <div class="tabs" role="tablist">
+      <button class="tab" data-tab="cat" role="tab" aria-selected="true">Licence<span class="tc" id="tc-cat"></span></button>
+      <button class="tab" data-tab="top" role="tab" aria-selected="false">Topics<span class="tc" id="tc-top"></span></button>
+    </div>
+    <button class="icon" id="fclose" title="Close">✕</button>
+  </div>
+
+  <div class="dbody">
+    <section id="pane-cat">
+      <p>Which licence are you sitting for? Road signs and general rules apply to everyone —
+         a two-wheeler candidate can skip the goods-carriage and motor-car questions.</p>
+      <p class="dhead">Quick picks</p>
+      <div class="presets" id="presets"></div>
+      <p class="dhead">Or choose categories</p>
+      <div class="taglist" id="taglist"></div>
+    </section>
+    <section id="pane-top" hidden>
+      <p>Drill one subject at a time. Pick several and you get every question in any of them.</p>
+      <div class="grid" id="toplist"></div>
+    </section>
+  </div>
+
+  <div class="dfoot">
+    <span class="fcount" id="fcount"></span>
+    <button class="btn" id="fclear">Clear</button>
+    <button class="btn primary" id="fdone">Done</button>
   </div>
 </dialog>
 
@@ -331,14 +383,16 @@ const stage = byId('stage');
 const seek = byId('seek'), knob = byId('knob'), tip = byId('tip'), prog = byId('prog');
 
 function saveUI(){
-  localStorage.setItem(PKEY, JSON.stringify(
-    {deck, n: queue[qi] ? queue[qi].n : null, reveal: revealMode, tags: [...tagSel]}));
+  localStorage.setItem(PKEY, JSON.stringify({deck, n: queue[qi] ? queue[qi].n : null,
+    reveal: revealMode, tags: [...tagSel], topics: [...topSel]}));
 }
 
-/* ---------- licence categories ----------
-   Each question carries one or more tags. "general" means it applies to every
-   candidate; the rest are specific to a class of vehicle. Nothing selected = no
-   filter; otherwise a card shows if it carries ANY selected tag.               */
+/* ---------- the two filters ----------
+   c.t = licence categories the question applies to ("general" = everyone).
+   c.p = subjects it is about.
+   Within one filter the selections are OR'd; the two filters are AND'ed. So
+   "Two-wheeler + Speed limits" means bike-relevant AND about speed. An empty
+   filter means no restriction on that dimension.                              */
 const TAG_LABELS = {general:'General', 'two-wheeler':'Two-wheeler', car:'Car / LMV',
                     auto:'Auto-rickshaw', transport:'Transport / heavy', tractor:'Tractor'};
 const PRESETS = [
@@ -348,18 +402,30 @@ const PRESETS = [
   ['Transport / heavy',  ['general','transport']],
   ['Tractor',            ['general','tractor']],
 ];
-let tagSel = new Set(Array.isArray(ui0.tags) ? ui0.tags.filter(t => TAG_LABELS[t]) : []);
+const TOPIC_LABELS = {
+  sign:'Road signs',       tsig:'Traffic lights',   hand:'Hand & turn signals',
+  mark:'Road markings',    lane:'Lanes & position', junc:'Junctions & turns',
+  ovtk:'Overtaking',       park:'Parking',          spd:'Speed limits',
+  ped:'Pedestrians & animals', rail:'Railway crossings', horn:'Horn & noise',
+  lite:'Lights & visibility',  defn:'Defensive driving', acc:'Accidents & first aid',
+  veh:'Vehicle & controls',    safe:'Safety gear',   load:'Loads & passengers',
+  poll:'Pollution & fuel', doc:'Documents & RC',    lic:'Licence rules',
+  off:'Offences & penalties',  law:'MV Act sections',
+};
+const clean = (a, labels) => new Set(Array.isArray(a) ? a.filter(t => labels[t]) : []);
+let tagSel = clean(ui0.tags,   TAG_LABELS);
+let topSel = clean(ui0.topics, TOPIC_LABELS);
 const tagOk = c => !tagSel.size || c.t.some(t => tagSel.has(t));
+const topOk = c => !topSel.size || c.p.some(t => topSel.has(t));
+const filtered = () => tagSel.size + topSel.size > 0;
 
 /* ---------- deck building ---------- */
 const pools = {
   all:    c => true,
-  signs:  c => !!c.img,
-  text:   c => !c.img,
   starred:c => st(c.n).star,
   hard:   c => st(c.n).bad > st(c.n).ok,
 };
-const inDeck = (c, k) => pools[k](c) && tagOk(c);      // deck AND category filter
+const inDeck = (c, k) => pools[k](c) && tagOk(c) && topOk(c);   // deck AND both filters
 function buildQueue(keepCard, wantN){
   const cur = wantN != null ? wantN : (keepCard && queue[qi] ? queue[qi].n : null);
   const pool = CARDS.filter(c => inDeck(c, deck));
@@ -389,13 +455,13 @@ function totals(){        // lifetime tallies, so they survive a refresh
 function render(){
   const c = queue[qi];
   if (!c){
-    const filtered = tagSel.size && CARDS.some(x => pools[deck](x));   // deck has cards, tags hid them
-    stage.innerHTML = `<div class="empty"><h2>${filtered ? 'No cards match these categories' : 'Nothing in this deck yet'}</h2>
-      <p>${filtered ? 'This deck has no questions in the licence categories you picked.'
+    const hidden = filtered() && CARDS.some(x => pools[deck](x));   // deck has cards, filters hid them
+    stage.innerHTML = `<div class="empty"><h2>${hidden ? 'No cards match these filters' : 'Nothing in this deck yet'}</h2>
+      <p>${hidden ? 'Nothing is both in the licence categories and the topics you picked.'
         : deck==='starred' ? 'Star cards with the ★ button (or the S key) to build a review list.'
         : 'Answer a few cards wrong and they will collect here for extra drilling.'}</p>
-      <button class="btn" onclick="${filtered ? 'clearTags()' : "setDeck('all')"}">${
-        filtered ? 'Show every category' : 'Back to all cards'}</button></div>`;
+      <button class="btn" onclick="${hidden ? 'clearFilters()' : "setDeck('all')"}">${
+        hidden ? 'Clear the filters' : 'Back to all cards'}</button></div>`;
     updateStats(); return;
   }
   const s = st(c.n);
@@ -404,7 +470,7 @@ function render(){
     <div class="card">
       <div class="meta">
         <span class="badge">Q${c.n}</span>
-        ${c.img ? '<span class="badge">Road sign</span>' : ''}
+        ${c.p.map(t => `<span class="badge">${TOPIC_LABELS[t]}</span>`).join('')}
         <span class="badge${s.box>=3?' solid':''}">${boxes[Math.min(s.box,5)]}</span>
         ${s.seen ? `<span class="badge">${s.ok}/${s.seen} correct</span>` : ''}
         <button class="star ${s.star?'on':''}" id="starbtn" title="Star this card (S)">${s.star?'★':'☆'}</button>
@@ -471,44 +537,69 @@ function toggleStar(){
   counts();
 }
 
-/* ---------- category filter ---------- */
+/* ---------- filter sheet ----------
+   Two tabs over the same dialog: licence category and subject. Each row's count
+   is measured against the *other* tab's filter, so a "0" tells you the
+   combination is empty before you commit to it.                               */
+let ftab = 'cat';
 function paintTags(){
-  const n = tagSel.size, b = byId('tagbtn'), cnt = byId('tagcnt');
+  const n = tagSel.size + topSel.size, b = byId('tagbtn'), cnt = byId('tagcnt');
   b.classList.toggle('on', n > 0);
   cnt.textContent = n; cnt.classList.toggle('show', n > 0);
-  b.title = n ? 'Showing: ' + [...tagSel].map(t => TAG_LABELS[t]).join(', ')
-              : 'Filter by licence category';
+  const names = [...tagSel].map(t => TAG_LABELS[t]).concat([...topSel].map(t => TOPIC_LABELS[t]));
+  b.title = n ? 'Filtering: ' + names.join(', ') : 'Filter questions (F)';
 }
-function drawTagList(){
-  const list = byId('taglist'); list.innerHTML = '';
-  for (const t in TAG_LABELS){
-    const total = CARDS.filter(c => c.t.includes(t)).length;
+function drawPick(box, labels, sel, count, onpick){
+  box.innerHTML = '';
+  for (const t in labels){
+    const n = count(t);
     const lab = document.createElement('label');
-    lab.innerHTML = `<input type="checkbox"${tagSel.has(t) ? ' checked' : ''}>
-      <span>${TAG_LABELS[t]}</span><span class="n">${total}</span>`;
-    lab.querySelector('input').onchange = e => {
-      e.target.checked ? tagSel.add(t) : tagSel.delete(t);
-      applyTags();
-    };
-    list.appendChild(lab);
+    lab.className = 'pick' + (sel.has(t) ? ' on' : '') + (n ? '' : ' none');
+    lab.innerHTML = `<input type="checkbox"${sel.has(t) ? ' checked' : ''}>
+      <span>${labels[t]}</span><span class="n">${n}</span>`;
+    lab.querySelector('input').onchange = e => { onpick(t, e.target.checked); applyFilters(); };
+    box.appendChild(lab);
   }
 }
-function applyTags(){
-  paintTags();
+function drawFilters(){
+  drawPick(byId('taglist'), TAG_LABELS, tagSel,
+           t => CARDS.filter(c => c.t.includes(t) && topOk(c)).length,
+           (t, on) => on ? tagSel.add(t) : tagSel.delete(t));
+  drawPick(byId('toplist'), TOPIC_LABELS, topSel,
+           t => CARDS.filter(c => c.p.includes(t) && tagOk(c)).length,
+           (t, on) => on ? topSel.add(t) : topSel.delete(t));
+  for (const [id, n] of [['tc-cat', tagSel.size], ['tc-top', topSel.size]]){
+    byId(id).textContent = n; byId(id).classList.toggle('show', n > 0);
+  }
+  const n = CARDS.filter(c => tagOk(c) && topOk(c)).length;
+  byId('fcount').innerHTML = `Showing <b>${n}</b> of ${CARDS.length} questions`;
+  byId('fclear').disabled = !filtered();
+  byId('fclear').style.opacity = filtered() ? 1 : .45;
+}
+function applyFilters(){
+  paintTags(); drawFilters();
   buildQueue(true);        // stay on the current card when it survives the filter
   render();
 }
-function clearTags(){ tagSel.clear(); drawTagList(); applyTags(); }
-function openTags(){
+function clearFilters(){ tagSel.clear(); topSel.clear(); applyFilters(); }
+function setTab(t){
+  ftab = t;
+  document.querySelectorAll('#filters .tab').forEach(b =>
+    b.setAttribute('aria-selected', b.dataset.tab === t));
+  byId('pane-cat').hidden = t !== 'cat';
+  byId('pane-top').hidden = t !== 'top';
+  byId('filters').querySelector('.dbody').scrollTop = 0;
+}
+function openFilters(){
   const box = byId('presets'); box.innerHTML = '';
   for (const [label, tags] of PRESETS){
     const b = document.createElement('button');
     b.textContent = label;
-    b.onclick = () => { tagSel = new Set(tags); drawTagList(); applyTags(); };
+    b.onclick = () => { tagSel = new Set(tags); applyFilters(); };
     box.appendChild(b);
   }
-  drawTagList();
-  tagdlg.showModal();
+  drawFilters();
+  byId('filters').showModal();
 }
 
 /* ---------- theme ---------- */
@@ -531,10 +622,19 @@ function toggleShuffle(){
   buildQueue(true);      // stay on the card you were looking at
   render();
 }
+/* two crossing paths for shuffle, a sorted-list arrow for question order —
+   ⇄ reads as "swap", which is not what this button does */
+const SVG = p => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON_SHUFFLE = SVG(`<path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/>
+  <path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/>
+  <path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/>`);
+const ICON_ORDER = SVG(`<path d="m3 16 4 4 4-4"/><path d="M7 20V4"/>
+  <path d="M11 4h4"/><path d="M11 9h7"/><path d="M11 14h10"/>`);
 function paintShuffle(){
   const b = byId('shuffle');
   b.classList.toggle('on', shuffled);
-  b.textContent = shuffled ? '⇄' : '⇅';
+  b.innerHTML = shuffled ? ICON_SHUFFLE : ICON_ORDER;
   b.title = shuffled ? 'Shuffled — weakest cards first, random within. Click for question order.'
                      : 'Question order (Q1 → Q436). Click to shuffle.';
   byId('s-order').textContent = shuffled ? 'Shuffled' : 'In order';
@@ -599,9 +699,11 @@ byId('next').onclick = () => go(1);
 byId('prev').onclick = () => go(-1);
 byId('skip').onclick = () => go(1);
 byId('shuffle').onclick = toggleShuffle;
-byId('tagbtn').onclick = openTags;
-byId('tagclear').onclick = clearTags;
-byId('tagdone').onclick = () => tagdlg.close();
+byId('tagbtn').onclick = openFilters;
+byId('fclear').onclick = clearFilters;
+byId('fdone').onclick = () => filters.close();
+byId('fclose').onclick = () => filters.close();
+document.querySelectorAll('#filters .tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 byId('theme').onclick = () =>
   setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
 byId('flipmode').onclick = () => {
@@ -617,7 +719,8 @@ byId('reset').onclick = () => dlg.showModal();
 byId('doreset').onclick = () => { db = {}; save(); dlg.close(); counts(); buildQueue(false); render(); };
 
 addEventListener('keydown', e => {
-  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open || tagdlg.open) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || dlg.open || filters.open) return;
+  if (e.key.toLowerCase() === 'f'){ e.preventDefault(); openFilters(); return; }
   // let the focused seek slider handle its own arrow/space keys
   if (e.target === seek && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home','End'].includes(e.key)) return;
   const c = queue[qi]; if (!c) return;

@@ -14,11 +14,13 @@ def main():
     t0 = time.perf_counter()
     cards = json.loads((SRC / "cards.json").read_text(encoding="utf-8"))
     tags = json.loads((SRC / "tags.json").read_text(encoding="utf-8"))
+    topics = json.loads((SRC / "topics.json").read_text(encoding="utf-8"))
 
-    # attach licence-category tags, and inline every sign image as a data URI
-    # so the page stays a single portable file
+    # attach the two filter dimensions -- t = licence category, p = subject --
+    # and inline every sign image as a data URI so the page stays a single portable file
     for c in cards:
         c["t"] = tags.get(str(c["n"]), ["general"])
+        c["p"] = topics.get(str(c["n"]), [])
         if "img" in c:
             p = SRC / "signs" / c["img"]
             mime = mimetypes.guess_type(p.name)[0] or "image/jpeg"

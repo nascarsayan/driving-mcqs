@@ -1,0 +1,57 @@
+{
+"scenes": [
+ {"id": "load", "title": "Load on a goods carriage", "dims": [
+   {"key": "h",    "v": "3.8 m", "n": "3.8",
+    "what": "Highest the load may reach, measured from the ground", "q": 202},
+   {"key": "rear", "v": "1 m",   "n": "100",
+    "what": "Furthest a load may project behind — and only with a warning light or flag",
+    "q": 181, "also": [179, 421]}]},
+
+ {"id": "sides", "title": "The same load, seen from behind", "dims": [
+   {"key": "side", "v": "0", "what": "A load may not project at the sides at all", "q": 180}]},
+
+ {"id": "towing", "title": "Towing another vehicle", "dims": [
+   {"key": "gap", "v": "5 m", "n": "5",
+    "what": "Greatest gap between the towing and the towed vehicle", "q": 183}]},
+
+ {"id": "gantry", "title": "Where a restriction sign says so", "dims": [
+   {"key": "w",  "v": "2 m",   "n": "2",
+    "what": "No entry for a vehicle wider than this", "q": 62},
+   {"key": "ht", "v": "3.5 m", "n": "3.5",
+    "what": "No entry for a vehicle taller than this", "q": 64}]}
+],
+
+"time": {"from": 12, "to": 175200, "marks": [
+ {"h": 24,     "v": "24 hours", "n": "24",
+  "what": "Report an accident at the nearest police station", "q": 115, "also": [5, 117, 300]},
+ {"h": 168,    "v": "7 days",   "n": "7",
+  "what": "Produce your PUC certificate after an officer stops you", "q": 362},
+ {"h": 4380,   "v": "6 months", "n": "6",
+  "what": "Learner's licence · PUC certificate · longest jail term for drunk driving",
+  "q": 15, "also": [67, 161]},
+ {"h": 131400, "v": "15 years", "n": "15",
+  "what": "One-time tax on a new car", "q": 83}
+]},
+
+"lists": [
+ {"title": "Minimum age", "items": [
+   {"v": "16 years", "n": "16", "q": 73,  "what": "Motor cycle without gear"},
+   {"v": "20 years", "n": "20", "q": 101, "what": "Transport vehicle licence"}]},
+
+ {"title": "Money", "items": [
+   {"v": "₹2000", "n": "2000", "q": 191, "also": [161],
+    "what": "Minimum fine for overloading a goods carriage, and the cap on a drunk-driving fine — which can also be six months inside"},
+   {"v": "₹100",  "n": "100",  "q": 416, "what": "Fine for not wearing a seat belt"}]},
+
+ {"title": "Everything else", "items": [
+   {"v": "30 mg / 100 ml", "n": "30", "q": 417,
+    "what": "Blood alcohol above which driving is punishable"},
+   {"v": "6 children", "n": "6", "q": 410,
+    "what": "Students aged 5 to 12 allowed in an auto-rickshaw"},
+   {"v": "5 cm", "n": "5", "q": 172, "what": "Width of a stop line, in white or yellow"},
+   {"v": "Nobody", "q": 427, "also": [149],
+    "what": "May travel with the driver of a tractor"}]}
+],
+
+"weight": "There is no weight figure anywhere in the bank, so there is nothing to chart. What it says instead: the load on a goods carriage is whatever the permit allows (Q190), an axle-weight limit is posted on a sign (Q86), section 113 of the Act forbids exceeding the permitted weight (Q200), and overloading of any kind costs at least ₹2000 and can cost you the licence (Q191, Q137, Q415)."
+}

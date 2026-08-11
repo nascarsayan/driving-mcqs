@@ -15,6 +15,7 @@ Three views, switched from the header:
 | **Study** | The flashcards — spaced repetition, decks, filters |
 | **Signs** | Every picture in the bank as a cheat sheet: 73 road signs, the 7 driver hand signals and 15 road-marking photos, each with what it means. Filter it by text, or tap one to go and be quizzed on it |
 | **Speeds** | Every speed limit in the bank on one 0–80 km/h ray per vehicle, so you can see at a glance that a motor cycle does 25 near a school, 30 in the city at night, 40 in the city and 50 flat out. Filter by vehicle type; tap a branch for the question it came from |
+| **Numbers** | Everything else you have to memorise. Load and dimension limits as scale drawings of a lorry, a tow and a restriction gantry; the four time limits on a log ray; ages, fines and the blood-alcohol limit as a plain list |
 
 ## Studying
 
@@ -36,6 +37,24 @@ correct/wrong totals, and **which card you were on**. Refresh or close the tab a
 the same question in the same deck, with the same totals. The ⟳ button clears it.
 
 Other keys: <kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>S</kbd> star · <kbd>F</kbd> filters · <kbd>/</kbd> search.
+
+### Numbers
+
+[`src/numbers.json`](src/numbers.json) holds the figures, and the build applies the same rule as
+the speed chart: a cited question must exist, and where a figure is claimed the question or its
+answer has to contain it in digits. That check has already earned its keep — it caught Q421 stating
+the rear-projection limit as *"one meter"* in words rather than 100 cm.
+
+What gets a picture and what gets a list is deliberate. The load and dimension limits are drawn,
+to scale at 33 px to the metre, because they are physical facts and a lorry with arrows on it says
+it faster than a sentence. The four time limits share a **log** ray, because 24 hours and 15 years
+cannot sit on the same linear axis. Ages, fines and the blood-alcohol threshold are one-off facts
+with nothing to compare them against, so they are a plain list — a chart there would be decoration.
+
+**There is no weight chart, because the bank contains no weight figure at all.** Every weight answer
+is qualitative: the load is whatever the permit allows (Q190), the limit is posted on an axle-weight
+sign (Q86), section 113 forbids exceeding it (Q200). The only number attached to weight is the
+₹2000 minimum overloading fine, which lives on the money list.
 
 ### Speed limits
 
@@ -137,6 +156,7 @@ src/cards.json      431 questions - text, options, answer index, sign filename
 src/tags.json       question number -> licence categories (hand-maintained)
 src/topics.json     question number -> subjects (hand-maintained)
 src/speeds.json     the speed chart: vehicle, circumstance, km/h, source question
+src/numbers.json    the numbers sheet: dimensions, time limits, one-off figures
 src/signs/*.jpeg    95 sign images, one per question that has one
 ```
 

@@ -1,49 +1,49 @@
 {
 "axis": 80,
 "rows": [
- {"v": "Motor cycle", "tag": "two-wheeler", "marks": [
+ {"v": "Motor cycle", "icon": "bike", "tag": "two-wheeler", "marks": [
    {"kmh": 25, "at": "Near school", "q": 178},
    {"kmh": 30, "at": "City at night", "q": 189},
    {"kmh": 40, "at": "In cities", "q": 184},
    {"kmh": 40, "at": "Ghat road", "q": 195},
    {"kmh": 50, "at": "Maximum", "q": 174}]},
 
- {"v": "Motor car / LMV", "tag": "car", "marks": [
+ {"v": "Motor car / LMV", "icon": "car", "tag": "car", "marks": [
    {"kmh": 25, "at": "Near school", "q": 176},
    {"kmh": 40, "at": "Ghat road", "q": 194},
    {"kmh": 60, "at": "Maximum", "q": 197},
    {"kmh": 70, "at": "National highway", "q": 170}]},
 
- {"v": "Auto-rickshaw", "tag": "auto", "marks": [
+ {"v": "Auto-rickshaw", "icon": "auto", "tag": "auto", "marks": [
    {"kmh": 25, "at": "Near school", "q": 192},
    {"kmh": 30, "at": "In cities", "q": 209},
    {"kmh": 30, "at": "Ghat road", "q": 207},
    {"kmh": 40, "at": "Maximum", "q": 196}]},
 
- {"v": "Medium motor vehicle", "tag": "transport", "marks": [
+ {"v": "Medium motor vehicle", "icon": "truck", "tag": "transport", "marks": [
    {"kmh": 15, "at": "Near school", "q": 206},
    {"kmh": 35, "at": "Ghat road", "q": 211},
    {"kmh": 65, "at": "Maximum", "q": 198}]},
 
- {"v": "Heavy motor vehicle", "tag": "transport", "marks": [
+ {"v": "Heavy motor vehicle", "icon": "truck", "tag": "transport", "marks": [
    {"kmh": 15, "at": "Near school", "q": 203},
    {"kmh": 35, "at": "Ghat road", "q": 208},
    {"kmh": 45, "at": "In cities", "q": 182},
    {"kmh": 65, "at": "Maximum", "q": 210}]},
 
- {"v": "Heavy passenger vehicle", "tag": "transport", "marks": [
+ {"v": "Heavy passenger vehicle", "icon": "bus", "tag": "transport", "marks": [
    {"kmh": 15, "at": "Near school", "q": 204}]},
 
- {"v": "Truck / goods carriage", "tag": "transport", "marks": [
+ {"v": "Truck / goods carriage", "icon": "truck", "tag": "transport", "marks": [
    {"kmh": 60, "at": "National highway", "q": 177}]},
 
- {"v": "Ambulance", "tag": "general", "marks": [
+ {"v": "Ambulance", "icon": "amb", "tag": "general", "marks": [
    {"kmh": 60, "at": "Maximum", "q": 404}]},
 
- {"v": "Any vehicle towing another", "tag": "general", "marks": [
+ {"v": "Any vehicle towing another", "icon": "tow", "tag": "general", "marks": [
    {"kmh": 24, "at": "Maximum", "q": 186}]},
 
- {"v": "Passing a procession", "tag": "general", "marks": [
+ {"v": "Passing a procession", "icon": "walk", "tag": "general", "marks": [
    {"kmh": 15, "at": "Procession", "q": 201},
    {"kmh": 25, "at": "Men at work / troops", "q": 356}]}
 ],

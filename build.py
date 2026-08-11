@@ -38,10 +38,26 @@ def main():
             if str(m["kmh"]) not in ans:
                 sys.exit(f"build failed: Q{m['q']} answers {ans!r}, not {m['kmh']} km/h")
 
+    # same rule for the numbers sheet: a cited question must exist, and where a
+    # figure is claimed the question or its answer has to actually contain it
+    numbers = json.loads((SRC / "numbers.json").read_text(encoding="utf-8"))
+    text = {c["n"]: c["q"] + " " + " ".join(c["o"]) for c in cards}
+    facts = ([d for s in numbers["scenes"] for d in s["dims"]] + numbers["time"]["marks"]
+             + [i for g in numbers["lists"] for i in g["items"]])
+    for f in facts:
+        for q in [f["q"]] + f.get("also", []):
+            if q not in text:
+                sys.exit(f"build failed: numbers.json cites Q{q}, which does not exist")
+        # only the primary citation has to state the figure in digits -- the "also"
+        # questions may put the same limit in words ("one meter" in Q421)
+        if f.get("n") and f["n"] not in text[f["q"]]:
+            sys.exit(f"build failed: Q{f['q']} never mentions {f['n']} ({f['v']})")
+
     data = json.dumps(cards, ensure_ascii=False, separators=(",", ":"))
     html = (SRC / "template.html").read_text(encoding="utf-8")
     for token, value in (("__DATA__", data), ("__COUNT__", str(len(cards))),
-                         ("__SPEEDS__", json.dumps(speeds, ensure_ascii=False, separators=(",", ":")))):
+                         ("__SPEEDS__", json.dumps(speeds, ensure_ascii=False, separators=(",", ":"))),
+                         ("__NUMBERS__", json.dumps(numbers, ensure_ascii=False, separators=(",", ":")))):
         if token not in html:
             sys.exit(f"build failed: {token} missing from template.html")
         html = html.replace(token, value)

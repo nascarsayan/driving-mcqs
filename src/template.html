@@ -254,6 +254,48 @@
   .mk:hover .dot{background:hsl(var(--danger))}
   .mk:hover .lbl b{color:hsl(var(--danger))}
 
+  /* ---------- vehicle icons & dimension diagrams ---------- */
+  .veh{width:34px;height:20px;flex:none;color:hsl(var(--muted-fg))}
+  .srow h3{display:flex;align-items:center;gap:8px}
+  .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;
+         align-items:start}   /* each card only as tall as its own diagram */
+  .dcard{margin:0;padding:12px;border:1px solid hsl(var(--border));border-radius:var(--radius);
+         background:hsl(var(--card));box-shadow:var(--shadow)}
+  .dgm{width:100%;height:auto;display:block;overflow:visible}
+  .dgm .body{fill:hsl(var(--muted));stroke:hsl(var(--fg));stroke-width:2;stroke-linejoin:round}
+  .dgm .glass{fill:hsl(var(--bg));stroke:hsl(var(--fg));stroke-width:1.5}
+  .dgm .wheel{fill:hsl(var(--fg))}
+  .dgm .bar{stroke:hsl(var(--fg));stroke-width:4;stroke-linecap:round}
+  .dgm .load{fill:hsl(var(--star)/.22);stroke:hsl(var(--star));stroke-width:2}
+  .dgm .ground{stroke:hsl(var(--border));stroke-width:2}
+  .dgm .ext{stroke:hsl(var(--border));stroke-width:1;stroke-dasharray:3 3}
+  .dgm .no{stroke:hsl(var(--danger));stroke-width:2;fill:none}
+  .dgm .ghost{fill:none;stroke:hsl(var(--danger));stroke-width:1.4;stroke-dasharray:4 3;opacity:.75}
+  .dgm .dim{cursor:pointer}
+  .dgm .dim line{stroke:hsl(var(--danger));stroke-width:1.6}
+  .dgm .dim path{stroke:hsl(var(--danger));stroke-width:2;fill:none}
+  .dgm .dim text{fill:hsl(var(--danger));font:600 14px ui-sans-serif,system-ui;
+                 font-variant-numeric:tabular-nums}
+  .dgm .dim:hover line,.dgm .dim:hover path{stroke-width:2.6}
+  .dcard figcaption{margin-top:8px}
+  .dtitle{display:block;font-size:13.5px;margin-bottom:5px}
+  .dfact{display:block;width:100%;text-align:left;font-size:12.5px;line-height:1.45;
+         color:hsl(var(--muted-fg));padding:4px 6px;border-radius:6px}
+  .dfact:hover{background:hsl(var(--muted))}
+  .dfact b{color:hsl(var(--danger));font-weight:600;font-variant-numeric:tabular-nums}
+  .dfact i,.fact i{font-style:normal;color:hsl(var(--muted-fg));opacity:.7;font-size:11px;
+                   font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* one-off facts: a list, not a chart — there is nothing to compare them against */
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:4px;
+         align-items:start}
+  .fact{display:flex;align-items:baseline;gap:9px;text-align:left;padding:9px 10px;
+        border-radius:var(--radius);border:1px solid transparent;font-size:13.5px}
+  .fact:hover{background:hsl(var(--muted))}
+  .fact>b{flex:none;min-width:96px;font-weight:600;color:hsl(var(--fg));
+          font-variant-numeric:tabular-nums}
+  .fact>span{color:hsl(var(--muted-fg));line-height:1.4}
+
   /* ---------- search palette ---------- */
   #search{padding:0;max-width:560px;max-height:min(80vh,640px);overflow:hidden}
   #search{max-height:min(80dvh,640px)}
@@ -368,6 +410,9 @@
     .sgrid{grid-template-columns:1fr 1fr;gap:8px}
     .srow h3{font-size:13px}
     .mk .lbl{font-size:11px}
+    .dgrid{grid-template-columns:1fr}
+    .fact{font-size:13px}.fact>b{min-width:88px}
+    .veh{width:30px;height:18px}
   }
   @keyframes sheet{from{transform:translateY(24px)}to{transform:none}}
 </style>
@@ -388,6 +433,7 @@
       <button data-view="study" role="tab" aria-selected="true">Study</button>
       <button data-view="signs" role="tab" aria-selected="false">Signs</button>
       <button data-view="speeds" role="tab" aria-selected="false">Speeds</button>
+      <button data-view="numbers" role="tab" aria-selected="false">Numbers</button>
     </div>
     <div class="tools">
       <button class="icon" id="searchbtn" title="Search questions (/)"><svg width="14" height="14"
@@ -422,6 +468,7 @@
   <div id="stage"></div>
   <div id="sheet" hidden></div>
   <div id="chart" hidden></div>
+  <div id="nums" hidden></div>
 </main>
 
 <footer>
@@ -488,6 +535,7 @@
 <script>
 const CARDS = __DATA__;
 const SPEEDS = __SPEEDS__;
+const NUMBERS = __NUMBERS__;
 
 /* ---------- persistence ----------
    ll-flash-v1      per-question record: Leitner box, seen/ok/bad tallies, star
@@ -872,6 +920,31 @@ function renderSheet(){
   [...byId('sheet').querySelectorAll('.tile')].forEach(b => b.onclick = () => jumpTo(+b.dataset.n));
 }
 
+/* ---------- vehicle artwork ----------
+   Line-art side views on a 48x28 box, sitting on a ground line at y=24, so they
+   line up with each other however they are laid out.                          */
+const VEH = {
+  bike:`<circle cx="10" cy="18" r="6"/><circle cx="38" cy="18" r="6"/>
+        <path d="M10 18l7-8h8l5 8M17 10h9M31 10l2-4M29 6h6M31 10l7 8"/>`,
+  car: `<path d="M4 19v-3l4-6h20l7 6h8a2 2 0 012 2v1"/><path d="M4 19h41"/>
+        <circle cx="14" cy="20" r="4"/><circle cx="35" cy="20" r="4"/><path d="M16 10v6"/>`,
+  auto:`<path d="M11 20v-7a10 10 0 0110-9h5a9 9 0 019 9v7"/><path d="M11 13h24"/>
+        <circle cx="11" cy="21" r="3"/><circle cx="36" cy="21" r="4"/>`,
+  truck:`<rect x="3" y="7" width="24" height="12" rx="1"/><path d="M27 10h8l6 6v3H27z"/>
+        <path d="M3 19h38"/><circle cx="11" cy="21" r="3.5"/><circle cx="34" cy="21" r="3.5"/>`,
+  bus: `<rect x="4" y="6" width="38" height="14" rx="2"/><path d="M9 10h7M20 10h7M31 10h7"/>
+        <circle cx="13" cy="21" r="3.5"/><circle cx="34" cy="21" r="3.5"/>`,
+  amb: `<rect x="3" y="8" width="23" height="11" rx="1"/><path d="M26 11h8l6 5v3H26z"/>
+        <path d="M14 11v5M11.5 13.5h5"/><circle cx="11" cy="21" r="3"/><circle cx="34" cy="21" r="3"/>`,
+  tow: `<path d="M2 19v-3l3-4h8l3 4v3"/><circle cx="6" cy="20" r="2.5"/><circle cx="15" cy="20" r="2.5"/>
+        <path d="M19 17h7"/><path d="M27 19v-3l3-4h9l4 4v3"/>
+        <circle cx="31" cy="20" r="2.5"/><circle cx="41" cy="20" r="2.5"/>`,
+  walk:`<circle cx="15" cy="6" r="2.5"/><path d="M15 9v7l-3 6M15 16l3 6M11 12h8"/>
+        <circle cx="31" cy="6" r="2.5"/><path d="M31 9v7l-3 6M31 16l3 6M27 12h8"/>`,
+};
+const vehIcon = k => VEH[k] ? `<svg class="veh" viewBox="0 0 48 28" fill="none" stroke="currentColor"
+  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${VEH[k]}</svg>` : '';
+
 /* ---------- speed chart ----------
    One ray per vehicle, 0 to 80 km/h on a shared scale, with each limit
    branching off where it falls. Labels are stacked onto as many levels as it
@@ -879,11 +952,11 @@ function renderSheet(){
 const VEHS = [['All vehicles', []], ['Two-wheeler', ['general','two-wheeler']],
               ['Car / LMV', ['general','car']], ['Auto-rickshaw', ['general','auto']],
               ['Transport / heavy', ['general','transport']]];
-function layout(marks, W){
-  const items = marks.map(m => ({...m,
-    x: m.kmh / SPEEDS.axis * W,
-    w: (String(m.kmh) + ' ' + m.at).length * 6.1 + 12,
-  })).sort((a, b) => a.x - b.x);
+/* Stack labels onto as many levels as it takes for them not to collide, and pull
+   the ones at either end inside the track. Shared by the speed and time rays. */
+function ray(marks, W){
+  const items = marks.map(m => ({...m, w: (m.big + ' ' + m.small).length * 6.1 + 12}))
+                     .sort((a, b) => a.x - b.x);
   const ends = [];
   for (const it of items){
     let start = it.x - it.w / 2;
@@ -895,7 +968,12 @@ function layout(marks, W){
     ends[lv] = start + it.w;
     it.lv = lv;
   }
-  return items;
+  const depth = Math.max(...items.map(i => i.lv));
+  return {pad: 28 + depth * 17, html: items.map(m =>
+    `<button class="mk ${m.side}" style="left:${m.x / W * 100}%;--stem:${6 + m.lv * 17}px"
+       data-n="${m.q}" title="Q${m.q}: ${esc(m.small)}">
+       <span class="dot"></span><span class="stem"></span>
+       <span class="lbl"><b>${esc(String(m.big))}</b> ${esc(m.small)}</span></button>`).join('')};
 }
 function renderSpeeds(){
   const rows = SPEEDS.rows.filter(r => r.tag === 'general' || !tagSel.size || tagSel.has(r.tag));
@@ -909,16 +987,9 @@ function renderSpeeds(){
       `<i style="left:${v / SPEEDS.axis * 100}%">${v}</i>`).join('')}</div>`;
 
   for (const r of rows){
-    const items = layout(r.marks, W);
-    const depth = Math.max(...items.map(i => i.lv));
-    html += `<div class="srow"><h3>${r.v}</h3>
-      <div class="track" style="margin-bottom:${28 + depth * 17}px">${items.map(m => {
-        const stem = 6 + m.lv * 17;
-        return `<button class="mk ${m.side}" style="left:${m.x / W * 100}%;--stem:${stem}px"
-          data-n="${m.q}" title="Q${m.q}: ${esc(r.v)} — ${esc(m.at)}">
-          <span class="dot"></span><span class="stem"></span>
-          <span class="lbl"><b>${m.kmh}</b> ${esc(m.at)}</span></button>`;
-      }).join('')}</div></div>`;
+    const t = ray(r.marks.map(m => ({x: m.kmh / SPEEDS.axis * W, big: m.kmh, small: m.at, q: m.q})), W);
+    html += `<div class="srow"><h3>${vehIcon(r.icon)}${r.v}</h3>
+      <div class="track" style="margin-bottom:${t.pad}px">${t.html}</div></div>`;
   }
   html += `<h2 class="sec">Worth knowing</h2>` +
     SPEEDS.notes.map(n => `<p class="note">${esc(n)}</p>`).join('');
@@ -929,22 +1000,129 @@ function renderSpeeds(){
   });
 }
 
+/* ---------- the numbers sheet ----------
+   Dimensions get drawn, because they are physical and a picture says it faster
+   than a sentence. Time gets a ray, because four values spanning 24 hours to 15
+   years only make sense on a log scale. The rest — an age here, a fine there —
+   are one-off facts with nothing to compare them against, so they are a list.  */
+const dim = (d, body) => `<g class="dim" data-n="${d.q}"><title>Q${d.q}: ${esc(d.what)}</title>${body}</g>`;
+const SCENES = {
+  // side view of a goods carriage: 33px to the metre, so the drawing is to scale
+  load: d => `<svg class="dgm" viewBox="0 0 440 232" role="img"
+      aria-label="Goods carriage loaded to 3.8 metres high with the load projecting 1 metre behind">
+    <line class="ground" x1="8" y1="180" x2="432" y2="180"/>
+    <rect class="body" x="88" y="96" width="190" height="52"/>
+    <rect class="body" x="88" y="148" width="290" height="8"/>
+    <rect class="body" x="286" y="100" width="88" height="48" rx="4"/>
+    <rect class="glass" x="316" y="106" width="46" height="20" rx="2"/>
+    <circle class="wheel" cx="120" cy="168" r="13"/><circle class="wheel" cx="158" cy="168" r="13"/>
+    <circle class="wheel" cx="330" cy="168" r="13"/>
+    <rect class="load" x="57" y="55" width="223" height="41"/>
+    <path class="no" d="M57 55V37m0 2 15 5-15 5" fill="none"/>
+    <line class="ext" x1="280" y1="55" x2="424" y2="55"/>
+    <line class="ext" x1="57" y1="96" x2="57" y2="210"/><line class="ext" x1="88" y1="156" x2="88" y2="210"/>
+    ${dim(d.h, `<line x1="418" y1="180" x2="418" y2="55" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="408" y="118" transform="rotate(-90 408 118)" text-anchor="middle">${d.h.v}</text>`)}
+    ${dim(d.rear, `<line x1="57" y1="204" x2="88" y2="204" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="72" y="224" text-anchor="middle">${d.rear.v}</text>`)}
+  </svg>`,
+
+  // the same lorry from behind, with the overhang that is not allowed ghosted in
+  sides: d => `<svg class="dgm" viewBox="0 0 300 214" role="img"
+      aria-label="Rear of a lorry: the load is flush with the sides and may not project">
+    <line class="ground" x1="16" y1="170" x2="284" y2="170"/>
+    <rect class="body" x="95" y="60" width="110" height="95"/>
+    <rect class="wheel" x="83" y="132" width="14" height="34" rx="3"/>
+    <rect class="wheel" x="203" y="132" width="14" height="34" rx="3"/>
+    <rect class="load" x="99" y="38" width="102" height="22"/>
+    ${dim(d.side, `<rect class="ghost" x="52" y="38" width="45" height="22"/>
+      <rect class="ghost" x="203" y="38" width="45" height="22"/>
+      <path d="M58 43l33 12M91 43L58 55M209 43l33 12M242 43l-33 12"/>
+      <text x="150" y="196" text-anchor="middle">No side projection</text>`)}
+  </svg>`,
+
+  towing: d => `<svg class="dgm" viewBox="0 0 440 176" role="img"
+      aria-label="Two vehicles connected by a tow bar, five metres apart at most">
+    <line class="ground" x1="8" y1="115" x2="432" y2="115"/>
+    ${[30, 270].map(x => `<g transform="translate(${x},0)">
+      <path class="body" d="M0 100V86l22-26h56l26 26h30a6 6 0 016 6v8z"/>
+      <circle class="wheel" cx="32" cy="104" r="11"/><circle class="wheel" cx="106" cy="104" r="11"/>
+      </g>`).join('')}
+    <path class="bar" d="M170 96h100"/>
+    <line class="ext" x1="170" y1="100" x2="170" y2="150"/><line class="ext" x1="270" y1="100" x2="270" y2="150"/>
+    ${dim(d.gap, `<line x1="170" y1="144" x2="270" y2="144" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="220" y="166" text-anchor="middle">${d.gap.v} max</text>`)}
+  </svg>`,
+
+  gantry: d => `<svg class="dgm" viewBox="0 0 340 244" role="img"
+      aria-label="A vehicle passing under a restriction gantry, two metres wide and 3.5 metres high">
+    <line class="ground" x1="12" y1="200" x2="328" y2="200"/>
+    <rect class="body" x="30" y="42" width="12" height="158"/><rect class="body" x="298" y="42" width="12" height="158"/>
+    <rect class="body" x="24" y="26" width="292" height="16" rx="2"/>
+    <rect class="body" x="132" y="88" width="76" height="36" rx="4"/>
+    <rect class="glass" x="140" y="95" width="60" height="22" rx="2"/>
+    <rect class="body" x="115" y="122" width="110" height="62" rx="4"/>
+    <rect class="wheel" x="103" y="162" width="14" height="38" rx="3"/>
+    <rect class="wheel" x="223" y="162" width="14" height="38" rx="3"/>
+    <line class="ext" x1="115" y1="184" x2="115" y2="222"/><line class="ext" x1="225" y1="184" x2="225" y2="222"/>
+    ${dim(d.w, `<line x1="115" y1="216" x2="225" y2="216" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="170" y="236" text-anchor="middle">${d.w.v}</text>`)}
+    ${dim(d.ht, `<line x1="266" y1="200" x2="266" y2="42" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="258" y="121" transform="rotate(-90 258 121)" text-anchor="middle">${d.ht.v}</text>`)}
+  </svg>`,
+};
+const qlinks = f => [f.q].concat(f.also || []).map(q => 'Q' + q).join(' · ');
+function renderNumbers(){
+  const N = NUMBERS, W = Math.max(240, byId('nums').clientWidth || 340);
+  let html = `<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5"
+              orient="auto-start-reverse"><path d="M0 0l10 5-10 5z" fill="hsl(var(--danger))"/></marker>
+    </defs></svg>
+    <p class="note">Every figure here is an answer in the question bank. Tap one to open the
+       question it came from.</p>
+    <h2 class="sec">Dimensions &amp; load</h2><div class="dgrid">`;
+  for (const s of N.scenes){
+    const d = Object.fromEntries(s.dims.map(x => [x.key, x]));
+    html += `<figure class="dcard">${SCENES[s.id](d)}
+      <figcaption><b class="dtitle">${esc(s.title)}</b>${s.dims.map(x =>
+        `<button class="dfact" data-n="${x.q}"><b>${esc(x.v)}</b> ${esc(x.what)}
+           <i>${qlinks(x)}</i></button>`).join('')}</figcaption></figure>`;
+  }
+
+  const lg = Math.log, T = N.time;
+  const at = h => (lg(h) - lg(T.from)) / (lg(T.to) - lg(T.from));
+  const t = ray(T.marks.map(m => ({x: at(m.h) * W, big: m.v, small: m.what, q: m.q})), W);
+  html += `</div><h2 class="sec">Time limits<span>a log scale — 24 hours to 15 years</span></h2>
+    <div class="axis">${[[24,'a day'],[168,'a week'],[730,'a month'],[8760,'a year'],[87600,'10 years']]
+      .map(([h, label]) => `<i style="left:${at(h)*100}%">${label}</i>`).join('')}</div>
+    <div class="srow"><div class="track" style="margin-bottom:${t.pad}px">${t.html}</div></div>`;
+
+  for (const g of N.lists)
+    html += `<h2 class="sec">${esc(g.title)}</h2><div class="facts">${g.items.map(i =>
+      `<button class="fact" data-n="${i.q}"><b>${esc(i.v)}</b><span>${esc(i.what)}</span>
+         <i>${qlinks(i)}</i></button>`).join('')}</div>`;
+
+  html += `<h2 class="sec">Weight</h2><p class="note">${esc(N.weight)}</p>`;
+  byId('nums').innerHTML = html;
+  [...byId('nums').querySelectorAll('[data-n]')].forEach(b => b.onclick = () => jumpTo(+b.dataset.n));
+}
+
 /* ---------- views ---------- */
-let view = ['study','signs','speeds'].includes(ui0.view) ? ui0.view : 'study';
-function paint(){ view === 'signs' ? renderSheet() : view === 'speeds' ? renderSpeeds() : render(); }
+const VIEWS = {study:['stage', render], signs:['sheet', renderSheet],
+               speeds:['chart', renderSpeeds], numbers:['nums', renderNumbers]};
+let view = VIEWS[ui0.view] ? ui0.view : 'study';
+function paint(){ VIEWS[view][1](); }
 function setView(v){
   view = v;
   document.body.dataset.view = v;
   document.querySelectorAll('#views button').forEach(b =>
     b.setAttribute('aria-selected', b.dataset.view === v));
-  byId('stage').hidden = v !== 'study';
-  byId('sheet').hidden = v !== 'signs';
-  byId('chart').hidden = v !== 'speeds';
+  for (const k in VIEWS) byId(VIEWS[k][0]).hidden = k !== v;
   paint(); saveUI();
 }
-let rz;   // the chart's label stacking depends on width, so lay it out again after a resize
+let rz;   // the rays' label stacking depends on width, so lay them out again after a resize
 addEventListener('resize', () => { clearTimeout(rz);
-  rz = setTimeout(() => { if (view === 'speeds') renderSpeeds(); }, 150); });
+  rz = setTimeout(() => { if (view === 'speeds' || view === 'numbers') paint(); }, 150); });
 
 /* ---------- theme ---------- */
 function setTheme(t, remember){

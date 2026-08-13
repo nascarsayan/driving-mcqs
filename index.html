@@ -149,7 +149,9 @@
        padding:12px 14px;border-radius:var(--radius);border:1px solid hsl(var(--border));
        background:hsl(var(--card));color:hsl(var(--card-fg));font-size:15px;
        transition:background .13s,border-color .13s,transform .06s}
-  .opt:hover:not(:disabled){background:hsl(var(--muted))}
+  /* the reveal-mode options are divs, so :disabled never guards them — name the
+     answered states or hovering a revealed answer drops its green/red fill */
+  .opt:hover:not(:disabled):not(.correct):not(.wrong):not(.dim){background:hsl(var(--muted))}
   .opt:active:not(:disabled){transform:scale(.995)}
   .opt:disabled{cursor:default}
   .key{flex:none;width:21px;height:21px;border-radius:5px;background:hsl(var(--muted));color:hsl(var(--muted-fg));
@@ -182,7 +184,10 @@
   .nav{display:flex;align-items:center;gap:7px}
   .nav .btn{padding:8px 14px;border-radius:calc(var(--radius) - 1px);border:1px solid hsl(var(--border));
             background:hsl(var(--card));font-size:14px;font-weight:500;color:hsl(var(--fg));box-shadow:var(--shadow)}
-  .nav .btn:hover:not(:disabled){background:hsl(var(--muted))}
+  /* :not(.primary) matters: a bare .btn:hover is (0,4,0) and outranks .btn.primary at
+     (0,3,0), so hover would take the dark fill away and leave near-white text on grey.
+     On a phone that state sticks after the tap, which is when you notice. */
+  .nav .btn:hover:not(:disabled):not(.primary){background:hsl(var(--muted))}
   .nav .btn:disabled{opacity:.45;cursor:default}
   .nav .btn.primary{background:hsl(var(--primary));border-color:hsl(var(--primary));color:hsl(var(--primary-fg))}
   .nav .btn.primary:hover{opacity:.9}
@@ -326,7 +331,8 @@
   .drow{display:flex;gap:8px;justify-content:flex-end}
   .drow .btn,.dfoot .btn{padding:8px 14px;border-radius:calc(var(--radius) - 1px);
              border:1px solid hsl(var(--border));font-size:14px;font-weight:500;background:hsl(var(--card))}
-  .drow .btn:hover,.dfoot .btn:hover:not(:disabled){background:hsl(var(--muted))}
+  .drow .btn:hover:not(.primary):not(.danger),
+  .dfoot .btn:hover:not(:disabled):not(.primary){background:hsl(var(--muted))}
   .dfoot .btn:disabled{cursor:default}
   .drow .danger{background:hsl(var(--danger));border-color:hsl(var(--danger));color:hsl(var(--danger-bg));font-weight:600}
   .drow .danger:hover{background:hsl(var(--danger));opacity:.9}
